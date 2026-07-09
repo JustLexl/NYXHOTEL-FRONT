@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-primeui';
+
+@custom-variant dark (&:where([class*="app-dark"], [class*="app-dark"] *));
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-2xl: 1920px;
+
+  /* Custom colors for NYX Cancun */
+  --color-on-tertiary-fixed-variant: #3f484e;
+  --color-outline: #737780;
+  --color-secondary-container: #fed488;
+  --color-surface-bright: #f9f9fc;
+  --color-on-secondary-container: #785a1a;
+  --color-on-surface-variant: #43474f;
+  --color-tertiary-fixed: #dbe4eb;
+  --color-tertiary-fixed-dim: #bfc8ce;
+  --color-error: #ba1a1a;
+  --color-on-primary-fixed: #001b3c;
+  --color-deep-ocean: #246c97;
+  --color-surface-container-high: #e8e8ea;
+  --color-sand-gold: #D4AF37;
+  --color-surface-container: #eeeef0;
+  --color-inverse-surface: #2f3133;
+  --color-on-secondary-fixed: #261900;
+  --color-surface-variant: #e2e2e5;
+  --color-tertiary-container: #2b343a;
+  --color-on-secondary: #ffffff;
+  --color-surface: #f9f9fc;
+  --color-surface-dim: #dadadc;
+  --color-on-primary-fixed-variant: #1f477b;
+  --color-secondary-fixed: #ffdea5;
+  --color-inverse-on-surface: #f0f0f3;
+  --color-on-tertiary: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-background: #1a1c1e;
+  --color-on-primary-container: #799dd6;
+  --color-tropical-white: #F9FBFC;
+  --color-primary-fixed: #d5e3ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-primary: #ffffff;
+  --color-background: #f9f9fc;
+  --color-surface-container-highest: #e2e2e5;
+  --color-caribbean-cyan: #00A3C1;
+  --color-secondary: #775a19;
+  --color-on-tertiary-fixed: #141d22;
+  --color-on-error-container: #93000a;
+  --color-surface-container-low: #f3f3f6;
+  --color-secondary-fixed-dim: #e9c176;
+  --color-tertiary: #161f24;
+  --color-on-tertiary-container: #939ca3;
+  --color-outline-variant: #c3c6d1;
+  --color-primary-fixed-dim: #a7c8ff;
+  --color-on-secondary-fixed-variant: #5d4201;
+  --color-primary: #001e40;
+  --color-on-surface: #1a1c1e;
+  --color-inverse-primary: #a7c8ff;
+  --color-primary-container: #003366;
+  --color-on-error: #ffffff;
+  --color-surface-tint: #3a5f94;
+
+  /* Custom border-radius */
+  --radius-default: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+
+  /* Custom spacing */
+  --spacing-margin-mobile: 16px;
+  --spacing-unit: 8px;
+  --spacing-gutter: 24px;
+  --spacing-margin-desktop: 48px;
+  --spacing-container-max: 1440px;
+
+  /* Custom font families */
+  --font-headline-lg: "Playfair Display", serif;
+  --font-body-sm: "Hanken Grotesk", sans-serif;
+  --font-label-caps: "Hanken Grotesk", sans-serif;
+  --font-title-md: "Hanken Grotesk", sans-serif;
+  --font-headline-lg-mobile: "Playfair Display", serif;
+  --font-display-lg: "Playfair Display", serif;
+  --font-body-md: "Hanken Grotesk", sans-serif;
+
+  /* Custom typography settings */
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--font-weight: 600;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+
+  --text-label-caps: 12px;
+  --text-label-caps--line-height: 16px;
+  --text-label-caps--letter-spacing: 0.05em;
+  --text-label-caps--font-weight: 700;
+
+  --text-title-md: 18px;
+  --text-title-md--line-height: 24px;
+  --text-title-md--font-weight: 600;
+
+  --text-headline-lg-mobile: 24px;
+  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile--font-weight: 600;
+
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 56px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--font-weight: 400;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
