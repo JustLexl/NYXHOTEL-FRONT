@@ -35,6 +35,11 @@ export class AppMenu {
             icon: 'pi pi-shield',
             routerLink: ['/Inicio/Seguridad']
         },
+        {
+            label: 'Control de Llaves',
+            icon: 'pi pi-key',
+            routerLink: ['/Inicio/ControlLlaves']
+        },
     ];
 
     filteredModel = computed(() => {

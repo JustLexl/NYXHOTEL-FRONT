@@ -899,7 +899,7 @@ export class SeguridadComponent implements OnInit, OnDestroy {
         'MANTENIMIENTO',
         'AMA DE LLAVES',
         'LAVANDERIA',
-        'STUART',
+        'STEWARD',
         'AREAS PUBLICAS',
         'ADMINISTRACION',
         'SEGURIDAD',
@@ -954,7 +954,7 @@ export class SeguridadComponent implements OnInit, OnDestroy {
         private seguridadService: SeguridadService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) {}
+    ) { }
 
     ngOnInit() {
         this.subAlco = this.seguridadService.getAlcoholimetroRecords().subscribe(records => {
@@ -1062,7 +1062,7 @@ export class SeguridadComponent implements OnInit, OnDestroy {
 
     updateChart() {
         const dataValues = this.departments.map(dept => this.getRecordsForDept(dept).length);
-        
+
         this.chartData = {
             labels: this.departments.map(d => d.substring(0, 16) + (d.length > 16 ? '...' : '')),
             datasets: [
@@ -1220,7 +1220,7 @@ export class SeguridadComponent implements OnInit, OnDestroy {
     openEditDrawer(record: any, type: 'alcoholimetro' | 'accidente' | 'accidenteColaborador' | 'extravio') {
         this.drawerType = type;
         this.drawerMode = 'edit';
-        
+
         if (type === 'alcoholimetro') {
             this.selectedAlcoRecord = { ...record };
         } else if (type === 'accidente') {

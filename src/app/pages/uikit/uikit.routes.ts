@@ -86,5 +86,10 @@ export default [
         canActivate: [SeguridadGuard],
         loadComponent: () => import('./seguridad').then(c => c.SeguridadComponent)
     },
+    {
+        path: 'ControlLlaves',
+        data: { breadcrumb: 'Control de Llaves' },
+        loadComponent: () => import('./control-llaves').then(c => c.ControlLlavesComponent)
+    },
     { path: '**', redirectTo: '/notfound' },
 ] as Routes;
