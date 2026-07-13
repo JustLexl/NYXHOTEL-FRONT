@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { RoleGuard } from '@/app/core/guards/role.guard';
+import { SeguridadGuard } from '@/app/core/guards/seguridad.guard';
 
 export default [
     {
@@ -78,6 +79,12 @@ export default [
         path: 'VerReporteGuardia/:id',
         data: { breadcrumb: 'Ver Reporte de Guardia' },
         loadComponent: () => import('./verReporteGuardia').then(c => c.VerReporteGuardia)
+    },
+    {
+        path: 'Seguridad',
+        data: { breadcrumb: 'Seguridad' },
+        canActivate: [SeguridadGuard],
+        loadComponent: () => import('./seguridad').then(c => c.SeguridadComponent)
     },
     { path: '**', redirectTo: '/notfound' },
 ] as Routes;

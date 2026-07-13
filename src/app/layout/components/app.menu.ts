@@ -30,17 +30,32 @@ export class AppMenu {
             icon: 'pi pi-list',
             routerLink: ['/Inicio/ReportesGuardia']
         },
+        {
+            label: 'Seguridad',
+            icon: 'pi pi-shield',
+            routerLink: ['/Inicio/Seguridad']
+        },
     ];
 
     filteredModel = computed(() => {
+        const profile = this.authService.userProfile();
+        const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
+
+        // Filter out 'Seguridad' if the logged-in email is not seguridad@nyxhotels.com
+        const currentModel = this.model.filter(item => {
+            if (item.label === 'Seguridad') {
+                return email === 'seguridad@nyxhotels.com';
+            }
+            return true;
+        });
+
         if (this.authService.isAdministrador()) {
-            return this.model;
+            return currentModel;
         } else {
-            const profile = this.authService.userProfile();
             const role = (profile?.role || '').toLowerCase().trim();
             const puesto = (profile?.jobPosition || '').toLowerCase().trim();
 
-            return this.model.filter(item => {
+            return currentModel.filter(item => {
                 if (!item.roles) return true;
                 // Check if any of the item's allowed roles match the user's role or puesto
                 return item.roles.some((r: string) => {
