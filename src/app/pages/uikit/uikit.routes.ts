@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { RoleGuard } from '@/app/core/guards/role.guard';
 import { SeguridadGuard } from '@/app/core/guards/seguridad.guard';
+import { ControlLlavesGuard } from '@/app/core/guards/control-llaves.guard';
 
 export default [
     {
@@ -89,6 +90,7 @@ export default [
     {
         path: 'ControlLlaves',
         data: { breadcrumb: 'Control de Llaves' },
+        canActivate: [ControlLlavesGuard],
         loadComponent: () => import('./control-llaves').then(c => c.ControlLlavesComponent)
     },
     { path: '**', redirectTo: '/notfound' },

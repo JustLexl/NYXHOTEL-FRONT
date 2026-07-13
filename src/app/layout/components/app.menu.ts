@@ -51,6 +51,9 @@ export class AppMenu {
             if (item.label === 'Seguridad') {
                 return email === 'seguridad@nyxhotels.com';
             }
+            if (item.label === 'Control de Llaves') {
+                return email === 'supervisoresseguridad@nyxhotel.com' || email === 'seguridad@nyxhotels.com';
+            }
             return true;
         });
 
