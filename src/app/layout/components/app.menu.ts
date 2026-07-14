@@ -46,13 +46,18 @@ export class AppMenu {
         const profile = this.authService.userProfile();
         const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
 
+        // supervisoresseguridad solo puede ver Control de Llaves
+        if (email === 'supervisoresseguridad@nyxhotel.com') {
+            return this.model.filter(item => item.label === 'Control de Llaves');
+        }
+
         // Filter out 'Seguridad' if the logged-in email is not seguridad@nyxhotels.com
         const currentModel = this.model.filter(item => {
             if (item.label === 'Seguridad') {
                 return email === 'seguridad@nyxhotels.com';
             }
             if (item.label === 'Control de Llaves') {
-                return email === 'supervisoresseguridad@nyxhotel.com' || email === 'seguridad@nyxhotels.com';
+                return email === 'seguridad@nyxhotels.com';
             }
             return true;
         });

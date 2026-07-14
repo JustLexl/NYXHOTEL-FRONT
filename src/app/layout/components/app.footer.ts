@@ -7,10 +7,10 @@ import { LayoutService } from '@/app/layout/service/layout.service';
     template: `
         <div class="footer-start">
             <img [src]="logoUrl()" alt="logo" style="height: 2rem" />
-            <span class="app-name">Hotel NYX Cancun</span>
+            <span class="app-name">Hotel NYX Cancún</span>
         </div>
         <div class="footer-right">
-            <span>© Hotel NYX Cancun</span>
+            <span>© Hotel NYX Cancún</span>
         </div>`,
     host: {
         class: 'layout-footer'

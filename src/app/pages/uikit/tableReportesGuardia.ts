@@ -610,8 +610,21 @@ export class TableReportesGuardia implements OnInit {
         // Cargar reporte completo desde el API para garantizar todos los datos
         let r = reporte;
         if (r._id) {
-            try { r = await firstValueFrom(this.reporteService.getReporte(r._id)); } catch {}
+            try { r = await firstValueFrom(this.reporteService.getReporte(r._id)); } catch { }
         }
+
+        // ─── CARGAR LOGO COMO BASE64 ──────────────────────────────────
+        let logoDataUrl: string | null = null;
+        try {
+            const resp = await fetch('layout/images/NyxHotelLogo-removebg-preview.png');
+            const blob = await resp.blob();
+            logoDataUrl = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch { logoDataUrl = null; }
 
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
@@ -624,18 +637,31 @@ export class TableReportesGuardia implements OnInit {
         };
 
         // ─── ENCABEZADO ───────────────────────────────────────────────
+        const headerH = 36;
         doc.setFillColor(13, 148, 136);
-        doc.rect(0, 0, pageW, 32, 'F');
+        doc.rect(0, 0, pageW, headerH, 'F');
+
+        // Logo a la izquierda
+        const logoW = 38;
+        const logoH = 22;
+        const logoX = margin;
+        const logoY = (headerH - logoH) / 2;
+        if (logoDataUrl) {
+            doc.addImage(logoDataUrl, 'PNG', logoX, logoY, logoW, logoH);
+        }
+
+        // Texto a la derecha del logo
+        const textX = logoX + logoW + 5;
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(16);
+        doc.setFontSize(15);
         doc.setFont('helvetica', 'bold');
-        doc.text('REPORTE DE GUARDIA EJECUTIVA', margin, 13);
+        doc.text('REPORTE DE GUARDIA EJECUTIVA', textX, 13);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         const { fecha, hora } = this.formatearFechaHora(r.createdAt || r.fecha);
-        doc.text('Ejecutivo: ' + r.nombreEjecutivo, margin, 21);
-        doc.text('Fecha: ' + fecha + '   Hora: ' + hora, margin, 27);
-        y = 40;
+        doc.text('Ejecutivo: ' + r.nombreEjecutivo, textX, 22);
+        doc.text('Fecha: ' + fecha + '   Hora: ' + hora, textX, 29);
+        y = headerH + 6;
 
         // ─── TITULO DE SECCION ────────────────────────────────────────
         const sectionTitle = (title: string, rgb: [number, number, number]) => {
@@ -655,8 +681,8 @@ export class TableReportesGuardia implements OnInit {
             // Anchos de columna: Descripcion | Bien | Mal | Observaciones
             const total = pageW - margin * 2;
             const wBien = 18;
-            const wMal  = 18;
-            const wObs  = 55;
+            const wMal = 18;
+            const wObs = 55;
             const wDesc = total - wBien - wMal - wObs;
 
             // Cabecera de tabla
@@ -675,7 +701,7 @@ export class TableReportesGuardia implements OnInit {
 
             items.forEach((item, idx) => {
                 const descLines = doc.splitTextToSize(item.descripcion || '', wDesc - 4);
-                const obsLines  = doc.splitTextToSize(item.observaciones || '', wObs - 2);
+                const obsLines = doc.splitTextToSize(item.observaciones || '', wObs - 2);
                 const rowH = Math.max(descLines.length, obsLines.length, 1) * 4.5 + 3;
                 checkPage(rowH + 2);
 
@@ -784,8 +810,8 @@ export class TableReportesGuardia implements OnInit {
         // ─── EVIDENCIAS ───────────────────────────────────────────────
         if (r.evidencias && Object.keys(r.evidencias).length > 0) {
             const seccionLabels: Record<string, string> = {
-                'ah':  'Areas de Huespedes',
-                'eq':  'Equipos',
+                'ah': 'Areas de Huespedes',
+                'eq': 'Equipos',
                 'col': 'Areas de Colaboradores',
                 'inc': 'Incidentes'
             };
@@ -897,7 +923,7 @@ export class TableReportesGuardia implements OnInit {
         if (r.firmaEjecutivo) {
             checkPage(42);
             sectionTitle('Firma del Ejecutivo', [30, 41, 59]);
-            try { doc.addImage(r.firmaEjecutivo, 'PNG', margin, y, 60, 30); y += 34; } catch {}
+            try { doc.addImage(r.firmaEjecutivo, 'PNG', margin, y, 60, 30); y += 34; } catch { }
         }
 
 

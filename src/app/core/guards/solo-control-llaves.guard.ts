@@ -5,10 +5,12 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
+const SOLO_CONTROL_LLAVES_EMAIL = 'supervisoresseguridad@nyxhotel.com';
+
 @Injectable({
     providedIn: 'root'
 })
-export class ControlLlavesGuard implements CanActivate {
+export class SoloControlLlavesGuard implements CanActivate {
 
     constructor(private authService: AuthService, private router: Router, private injector: Injector) { }
 
@@ -33,11 +35,12 @@ export class ControlLlavesGuard implements CanActivate {
         const profile = this.authService.userProfile();
         const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
 
-        if (email === 'supervisoresseguridad@nyxhotel.com') {
-            return true;
+        // Si es el supervisor de seguridad, solo puede ver ControlLlaves — bloquear cualquier otra sección
+        if (email === SOLO_CONTROL_LLAVES_EMAIL) {
+            this.router.navigate(['/Inicio/ControlLlaves']);
+            return false;
         }
 
-        this.router.navigate(['/Inicio/ReporteGuardia']);
-        return false;
+        return true;
     }
 }

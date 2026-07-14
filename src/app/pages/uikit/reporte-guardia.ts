@@ -191,9 +191,9 @@ class DbDraftService {
     <div class="w-full max-w-4xl relative z-10">
         <!-- Logo -->
         <div class="flex flex-col items-center mb-10">
-            <img src="layout/images/NyxHotelLogo-removebg-preview.png" alt="Hotel NYX Cancun" class="h-32 mb-6 drop-shadow-md" />
+            <img src="layout/images/NyxHotelLogo-removebg-preview.png" alt="Hotel NYX Cancún" class="h-32 mb-6 drop-shadow-md" />
             <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight text-center">Reporte de Guardia Ejecutiva</h1>
-            <p class="text-slate-600 mt-3 text-center text-base md:text-lg font-medium">Hotel NYX Cancun — Sistema de Gestión Interna</p>
+            <p class="text-slate-600 mt-3 text-center text-base md:text-lg font-medium">Hotel NYX Cancún — Sistema de Gestión Interna</p>
         </div>
 
         <!-- Card principal blanca ancha -->
@@ -465,7 +465,7 @@ class DbDraftService {
                 class="w-full px-6 py-4 flex items-center gap-3 cursor-pointer hover:brightness-95 transition-all"
                 style="background: linear-gradient(135deg, #3730a3, #6d28d9);">
                 <span class="material-symbols-outlined text-purple-300" style="font-size:22px">badge</span>
-                <h2 class="text-white font-bold text-base flex-1 text-left">III. Áreas de Colaboradores</h2>
+                <h2 class="text-white font-bold text-base flex-1 text-left">Áreas de Colaboradores</h2>
                 <span class="text-white/70 text-xs mr-2">{{ contarRespondidos(reporte.areasColaboradores) }}/{{ reporte.areasColaboradores.length }}</span>
                 <span class="material-symbols-outlined text-white transition-transform duration-300"
                     [style.transform]="seccionesAbiertas.has('col') ? 'rotate(180deg)' : 'rotate(0deg)'"
@@ -584,7 +584,7 @@ class DbDraftService {
                 
                 <button type="button" 
                     *ngIf="!rest.cerrado"
-                    (click)="toggleSeccion('rest_' + ri)"
+                    (click)="$event.stopPropagation(); toggleSeccion('rest_' + ri)"
                     class="material-symbols-outlined text-white transition-transform duration-300 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center"
                     [style.transform]="seccionesAbiertas.has('rest_' + ri) ? 'rotate(180deg)' : 'rotate(0deg)'"
                     style="font-size:24px">expand_more</button>
@@ -869,6 +869,13 @@ export class ReporteGuardia {
         const draft = await this.dbDraftService.loadDraft();
         if (draft && draft.reporte && draft.reporte.nombreEjecutivo === this.nombreEjecutivo) {
             this.reporte = draft.reporte;
+            if (this.reporte.restaurantes) {
+                this.reporte.restaurantes.forEach(r => {
+                    if (r.nombre && r.nombre.includes('Tacos Villanos')) {
+                        r.nombre = 'Tacos Villanos — Cena';
+                    }
+                });
+            }
             this.evidenciaPreviews = draft.evidenciaPreviews || {};
             this.evidenciaLabels = draft.evidenciaLabels || {};
             this.vista = draft.vista || 'inicio';
@@ -939,7 +946,7 @@ export class ReporteGuardia {
                 crearRestaurante('Coffee Corner by Balam', ITEMS_COFFEE_CORNER),
                 crearRestaurante('Restaurante Chianti — Cena', ITEMS_RESTAURANTE_STD),
                 crearRestaurante('Restaurante Umami — Cena', ITEMS_RESTAURANTE_STD),
-                crearRestaurante('Tacos Villanos — Cene', ITEMS_TACOS),
+                crearRestaurante('Tacos Villanos — Cena', ITEMS_TACOS),
                 crearRestaurante('Restaurante Deck', ITEMS_RESTAURANTE_STD),
                 crearRestaurante('Lobby Bar', ITEMS_BAR),
                 crearRestaurante('Magic Bar', ITEMS_BAR),
