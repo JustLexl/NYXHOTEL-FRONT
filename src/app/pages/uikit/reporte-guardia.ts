@@ -1038,28 +1038,66 @@ export class ReporteGuardia {
         this.vista = 'inicio';
     }
 
-    onEvidenciaSelected(event: Event, sectionKey: string) {
+    comprimirImagen(file: File, maxWidth = 1024, quality = 0.7): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                        resolve(e.target?.result as string);
+                        return;
+                    }
+
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedBase64);
+                };
+                img.onerror = (err) => reject(err);
+                img.src = e.target?.result as string;
+            };
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async onEvidenciaSelected(event: Event, sectionKey: string) {
         const input = event.target as HTMLInputElement;
         if (!input.files) return;
         if (!this.evidenciaPreviews[sectionKey]) this.evidenciaPreviews[sectionKey] = [];
         if (!this.evidenciaFiles[sectionKey]) this.evidenciaFiles[sectionKey] = [];
         if (!this.evidenciaLabels[sectionKey]) this.evidenciaLabels[sectionKey] = [];
         const files = Array.from(input.files);
-        files.forEach(file => {
-            if (!file.type.startsWith('image/')) return;
-            this.evidenciaFiles[sectionKey].push(file);
-            this.evidenciaLabels[sectionKey].push('');
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const result = e.target?.result as string;
-                this.evidenciaPreviews[sectionKey].push(result);
+        
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) continue;
+            try {
+                const compressedBase64 = await this.comprimirImagen(file, 1024, 0.7);
+                this.evidenciaFiles[sectionKey].push(file);
+                this.evidenciaLabels[sectionKey].push('');
+                this.evidenciaPreviews[sectionKey].push(compressedBase64);
                 this.cdr.detectChanges();
                 this.guardarProgreso();
-            };
-            reader.readAsDataURL(file);
-        });
+            } catch (error) {
+                console.error('Error al comprimir la imagen:', error);
+            }
+        }
         input.value = '';
     }
+
 
     removeEvidencia(sectionKey: string, index: number) {
         this.evidenciaPreviews[sectionKey]?.splice(index, 1);
