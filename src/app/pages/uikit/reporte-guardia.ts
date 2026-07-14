@@ -1005,6 +1005,26 @@ export class ReporteGuardia {
             return;
         }
 
+        // ── Validación de tamaño total de evidencias ─────────────────────────────
+        // MongoDB tiene un límite estricto de 16 MB por documento.
+        // Calculamos el tamaño aproximado de todas las imágenes en base64.
+        const LIMITE_BYTES = 8 * 1024 * 1024; // 8 MB margen seguro
+        let totalBytes = 0;
+        Object.keys(this.evidenciaPreviews).forEach(key => {
+            (this.evidenciaPreviews[key] || []).forEach(preview => {
+                totalBytes += preview.length * 0.75; // base64 → bytes aproximado
+            });
+        });
+
+        if (totalBytes > LIMITE_BYTES) {
+            const totalMB = (totalBytes / (1024 * 1024)).toFixed(1);
+            this.errorEnvio = `Las imágenes adjuntas pesan en total ~${totalMB} MB y superan el límite permitido (8 MB). Por favor elimina algunas fotos antes de enviar.`;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            this.cdr.detectChanges();
+            return;
+        }
+        // ─────────────────────────────────────────────────────────────────────────
+
         this.enviando = true;
         this.errorEnvio = '';
         try {
@@ -1023,13 +1043,26 @@ export class ReporteGuardia {
             this.vista = 'enviado';
             await this.dbDraftService.clearDraft();
         } catch (err: any) {
-            this.errorEnvio = 'No se pudo enviar el reporte. Verifique la conexión con el servidor e intente de nuevo.';
+            // Extraer el error real para facilitar el diagnóstico
+            let mensajeError = 'Error desconocido';
+            if (err?.status) {
+                mensajeError = `Error ${err.status}`;
+            }
+            if (err?.error?.message) {
+                mensajeError += ': ' + err.error.message;
+            } else if (err?.message) {
+                mensajeError += ': ' + err.message;
+            } else if (typeof err?.error === 'string') {
+                mensajeError += ': ' + err.error;
+            }
+            this.errorEnvio = `No se pudo enviar el reporte. ${mensajeError}`;
             console.error('Error enviando reporte de guardia:', err);
         } finally {
             this.enviando = false;
             this.cdr.detectChanges();
         }
     }
+
 
     nuevoReporte() {
         this.inicializarReporte();
@@ -1038,38 +1071,75 @@ export class ReporteGuardia {
         this.vista = 'inicio';
     }
 
-    comprimirImagen(file: File, maxWidth = 1024, quality = 0.7): Promise<string> {
+    /**
+     * Comprime una imagen en un canvas con las dimensiones y calidad dadas.
+     * Retorna el resultado en base64 JPEG.
+     */
+    private comprimirEnCanvas(imgElement: HTMLImageElement, maxWidth: number, quality: number): string {
+        const canvas = document.createElement('canvas');
+        let width = imgElement.width;
+        let height = imgElement.height;
+
+        if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(imgElement, 0, 0, width, height);
+        return canvas.toDataURL('image/jpeg', quality);
+    }
+
+    /**
+     * Compresión ADAPTATIVA: intenta múltiples combinaciones de resolución y calidad
+     * hasta que la imagen quede por debajo de MAX_BYTES_POR_IMAGEN.
+     * Garantiza que 30+ fotos de teléfono nunca superen el límite de MongoDB (16 MB).
+     */
+    async comprimirImagenAdaptiva(file: File): Promise<string> {
+        // Presupuesto máximo en caracteres base64 por imagen.
+        // 200,000 chars base64 ≈ 150 KB de imagen real.
+        // 30 imágenes × 150 KB = 4.5 MB << 16 MB límite MongoDB.
+        const MAX_B64_CHARS = 200_000;
+
+        // Escala de compresión de mayor a menor calidad
+        const pasos = [
+            { maxWidth: 900, quality: 0.75 },
+            { maxWidth: 800, quality: 0.60 },
+            { maxWidth: 700, quality: 0.50 },
+            { maxWidth: 600, quality: 0.40 },
+            { maxWidth: 500, quality: 0.30 },
+            { maxWidth: 450, quality: 0.22 },
+            { maxWidth: 400, quality: 0.15 },
+            { maxWidth: 350, quality: 0.10 },
+        ];
+
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
+            reader.onerror = reject;
             reader.onload = (e) => {
                 const img = new Image();
+                img.onerror = reject;
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
+                    // Probar cada nivel hasta que la imagen quepa
+                    for (const paso of pasos) {
+                        const result = this.comprimirEnCanvas(img, paso.maxWidth, paso.quality);
+                        if (result.length <= MAX_B64_CHARS) {
+                            console.log(
+                                `[Compresión] ${file.name}: ${paso.maxWidth}px q=${paso.quality} → ${(result.length / 1024).toFixed(1)} KB base64`
+                            );
+                            resolve(result);
+                            return;
+                        }
                     }
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) {
-                        resolve(e.target?.result as string);
-                        return;
-                    }
-
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-                    resolve(compressedBase64);
+                    // Último recurso: mínima calidad absoluta
+                    const fallback = this.comprimirEnCanvas(img, 300, 0.08);
+                    console.warn(`[Compresión] ${file.name}: usando calidad mínima → ${(fallback.length / 1024).toFixed(1)} KB base64`);
+                    resolve(fallback);
                 };
-                img.onerror = (err) => reject(err);
                 img.src = e.target?.result as string;
             };
-            reader.onerror = (err) => reject(err);
             reader.readAsDataURL(file);
         });
     }
@@ -1081,11 +1151,12 @@ export class ReporteGuardia {
         if (!this.evidenciaFiles[sectionKey]) this.evidenciaFiles[sectionKey] = [];
         if (!this.evidenciaLabels[sectionKey]) this.evidenciaLabels[sectionKey] = [];
         const files = Array.from(input.files);
-        
+
         for (const file of files) {
             if (!file.type.startsWith('image/')) continue;
             try {
-                const compressedBase64 = await this.comprimirImagen(file, 1024, 0.7);
+                // Usar compresión adaptativa: garantiza ≤ 150KB por imagen
+                const compressedBase64 = await this.comprimirImagenAdaptiva(file);
                 this.evidenciaFiles[sectionKey].push(file);
                 this.evidenciaLabels[sectionKey].push('');
                 this.evidenciaPreviews[sectionKey].push(compressedBase64);

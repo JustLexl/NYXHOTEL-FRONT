@@ -33,7 +33,7 @@ export class ControlLlavesGuard implements CanActivate {
         const profile = this.authService.userProfile();
         const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
 
-        if (email === 'supervisoresseguridad@nyxhotel.com') {
+        if (email === 'supervisoresseguridad@nyxhotel.com' || email === 'seguridad@nyxhotels.com') {
             return true;
         }
 

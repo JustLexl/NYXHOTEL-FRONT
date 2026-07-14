@@ -48,10 +48,6 @@ import { FormsModule } from '@angular/forms';
             <div class="topbar-actions">
                 <p-button icon="pi pi-palette" rounded severity="contrast" (onClick)="onConfigButtonClick()"></p-button>
 
-                        <p-icon-field>
-                        </p-icon-field>
-                </div>
-
                 <div class="topbar-profile">
                     <button class="topbar-profile-button" type="button" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
                         <span class="profile-details">
@@ -73,6 +69,7 @@ import { FormsModule } from '@angular/forms';
                         </li>
                     </ul>
                 </div>
+            </div>
     `,
     host: {
         class: 'layout-topbar'

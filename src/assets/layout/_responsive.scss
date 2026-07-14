@@ -106,10 +106,22 @@
 
         .topbar-profile {
             .topbar-profile-button {
-                .profile-details,
-                .profile-name,
-                i {
+                /* En móvil: mostrar el nombre pero compacto, sin el cargo ni la flecha */
+                .profile-job,
+                i.pi-angle-down {
                     display: none;
+                }
+
+                .profile-details {
+                    display: flex;
+                }
+
+                .profile-name {
+                    font-size: 0.8rem;
+                    max-width: 100px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
             }
         }
