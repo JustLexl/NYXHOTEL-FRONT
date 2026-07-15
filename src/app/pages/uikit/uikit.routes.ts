@@ -101,6 +101,12 @@ export default [
         canActivate: [ControlLlavesGuard],
         loadComponent: () => import('./control-llaves').then(c => c.ControlLlavesComponent)
     },
+    {
+        path: 'LostAndFound',
+        data: { breadcrumb: 'Lost and Found' },
+        canActivate: [SoloControlLlavesGuard],
+        loadComponent: () => import('./lost-and-found').then(c => c.LostAndFoundComponent)
+    },
     { path: '**', redirectTo: '/notfound' },
 ] as Routes;
 

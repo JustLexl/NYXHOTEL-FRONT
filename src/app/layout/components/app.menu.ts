@@ -40,6 +40,11 @@ export class AppMenu {
             icon: 'pi pi-key',
             routerLink: ['/Inicio/ControlLlaves']
         },
+        {
+            label: 'Lost and Found',
+            icon: 'pi pi-briefcase',
+            routerLink: ['/Inicio/LostAndFound']
+        },
     ];
 
     filteredModel = computed(() => {
@@ -51,12 +56,15 @@ export class AppMenu {
             return this.model.filter(item => item.label === 'Control de Llaves');
         }
 
-        // Filter out 'Seguridad' if the logged-in email is not seguridad@nyxhotels.com
+        // Filter out 'Seguridad', 'Control de Llaves', and 'Lost and Found' if the logged-in email is not seguridad@nyxhotels.com
         const currentModel = this.model.filter(item => {
             if (item.label === 'Seguridad') {
                 return email === 'seguridad@nyxhotels.com';
             }
             if (item.label === 'Control de Llaves') {
+                return email === 'seguridad@nyxhotels.com';
+            }
+            if (item.label === 'Lost and Found') {
                 return email === 'seguridad@nyxhotels.com';
             }
             return true;
