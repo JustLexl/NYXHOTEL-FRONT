@@ -225,6 +225,12 @@ import { AuthService } from '@/app/core/services/auth.service';
                         <td class="py-3 px-4">
                             <div class="flex items-center justify-center gap-2">
                                 <button
+                                    (click)="openEditDrawer(item)"
+                                    title="Editar Registro"
+                                    class="bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 p-2 rounded-lg transition-all duration-150 border border-slate-200 cursor-pointer">
+                                    <i class="pi pi-pencil text-xs"></i>
+                                </button>
+                                <button
                                     *ngIf="!item.horaSalida"
                                     (click)="confirmarSalida(item)"
                                     [disabled]="registrandoSalida[item.id || item._id || '']"
@@ -235,17 +241,9 @@ import { AuthService } from '@/app/core/services/auth.service';
                                 </button>
                                 <span *ngIf="item.horaSalida"
                                     class="text-slate-400 text-xs font-semibold flex items-center gap-1">
-                                    <i class="pi pi-check text-emerald-500"></i>
-                                    Salida registrada
+                                    <i class="pi pi-check text-emerald-500 text-[10px]"></i>
+                                    Salida
                                 </span>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr *ngIf="filteredRecords.length === 0">
-                        <td colspan="8" class="py-16 px-6 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <i class="pi pi-truck text-5xl text-slate-200"></i>
-                                <p class="text-slate-400 font-medium">No se encontraron proveedores registrados.</p>
                             </div>
                         </td>
                     </tr>
@@ -266,7 +264,7 @@ import { AuthService } from '@/app/core/services/auth.service';
     <ng-template pTemplate="header">
         <div class="flex items-center gap-3 py-1">
             <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                <i class="pi pi-truck text-base"></i>
+                <i class="pi pi-plus text-base"></i>
             </span>
             <div>
                 <div class="font-extrabold text-slate-800 text-base leading-tight">
@@ -367,6 +365,137 @@ import { AuthService } from '@/app/core/services/auth.service';
     </div>
 </p-drawer>
 
+<!-- DRAWER: EDITAR PROVEEDOR -->
+<p-drawer
+    [(visible)]="editDrawerVisible"
+    position="right"
+    [style]="{ width: '460px', background: '#f8fafc', borderLeft: '1px solid #e2e8f0' }"
+    [modal]="true">
+
+    <ng-template pTemplate="header">
+        <div class="flex items-center gap-3 py-1">
+            <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <i class="pi pi-pencil text-base"></i>
+            </span>
+            <div>
+                <div class="font-extrabold text-slate-800 text-base leading-tight">
+                    Editar Proveedor
+                </div>
+                <div class="text-xs text-slate-500 font-medium">Modificar Registro — Seguridad</div>
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="flex flex-col gap-5 p-1">
+
+        <!-- Fecha y Hora Entrada -->
+        <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                <i class="pi pi-calendar text-indigo-500 mr-1"></i> Fecha y Hora de Entrada
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Fecha</label>
+                    <input type="date" [(ngModel)]="formEdit.fechaEntrada"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold text-slate-700" />
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Hora</label>
+                    <input type="time" [(ngModel)]="formEdit.horaEntrada"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold text-slate-700" />
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200"></div>
+
+        <!-- Nombre del Proveedor -->
+        <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                <i class="pi pi-user text-indigo-500 mr-1"></i> Nombre del Proveedor
+            </label>
+            <input type="text" [(ngModel)]="formEdit.nombreProveedor"
+                placeholder="Nombre completo del proveedor"
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        </div>
+
+        <!-- Compañía -->
+        <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                <i class="pi pi-building text-indigo-500 mr-1"></i> Compañía / Empresa
+            </label>
+            <input type="text" [(ngModel)]="formEdit.compania"
+                placeholder="Nombre de la empresa o compañía"
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        </div>
+
+        <!-- Número de Gafete -->
+        <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                <i class="pi pi-id-card text-indigo-500 mr-1"></i> Número de Gafete
+            </label>
+            <input type="text" [(ngModel)]="formEdit.numeroGafete"
+                placeholder="Ej. G-001, 4523..."
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        </div>
+
+        <!-- Destino -->
+        <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                <i class="pi pi-map-marker text-indigo-500 mr-1"></i> Destino dentro del Hotel
+            </label>
+            <input type="text" [(ngModel)]="formEdit.destino"
+                placeholder="Ej. Mantenimiento, Cocina, Gerencia..."
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        </div>
+
+        <!-- Agente de Seguridad -->
+        <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                <i class="pi pi-shield text-indigo-500 mr-1"></i> Agente de Seguridad
+            </label>
+            <input type="text" [(ngModel)]="formEdit.agenteSeguridad"
+                placeholder="Nombre del agente de seguridad"
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+        </div>
+
+        <!-- Hora y Fecha de Salida (Solo si ya tiene salida) -->
+        <div *ngIf="formEdit.horaSalida">
+            <div class="border-t border-slate-200 my-2"></div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                <i class="pi pi-sign-out text-indigo-500 mr-1"></i> Fecha y Hora de Salida
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Fecha de Salida</label>
+                    <input type="date" [(ngModel)]="formEdit.fechaSalida"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold text-slate-700" />
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Hora de Salida</label>
+                    <input type="time" [(ngModel)]="formEdit.horaSalida"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold text-slate-700" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="mt-2 flex gap-2">
+            <button (click)="editDrawerVisible = false"
+                class="w-1/3 py-3 border border-slate-300 hover:bg-slate-100 rounded-xl font-bold text-sm text-slate-600 uppercase transition-all duration-150 cursor-pointer">
+                Cancelar
+            </button>
+            <button (click)="submitEdit()"
+                [disabled]="submitting"
+                class="w-2/3 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm uppercase shadow transition-all duration-150 cursor-pointer flex items-center justify-center gap-2">
+                <i class="pi pi-check"></i>
+                Guardar Cambios
+            </button>
+        </div>
+
+    </div>
+</p-drawer>
+
 <!-- MODAL: CONFIRMAR SALIDA -->
 <div *ngIf="salidaModalVisible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
     <div class="bg-white w-full max-w-md rounded-2xl border border-slate-200 shadow-2xl overflow-hidden">
@@ -434,12 +563,14 @@ export class RegistroProveedoresComponent implements OnInit {
 
     // UI state
     addDrawerVisible = false;
+    editDrawerVisible = false;
     salidaModalVisible = false;
     submitting = false;
     registrandoSalida: { [key: string]: boolean } = {};
 
-    // Selected for salida
+    // Selected for salida/edit
     selectedRecord: RegistroProveedorRecord | null = null;
+    editingRecordId = '';
     currentTime = '';
     currentDate = '';
 
@@ -453,6 +584,18 @@ export class RegistroProveedoresComponent implements OnInit {
         numeroGafete: '',
         agenteSeguridad: '',
         destino: ''
+    };
+
+    formEdit = {
+        fechaEntrada: '',
+        horaEntrada: '',
+        nombreProveedor: '',
+        compania: '',
+        numeroGafete: '',
+        agenteSeguridad: '',
+        destino: '',
+        horaSalida: '',
+        fechaSalida: ''
     };
 
     constructor(
@@ -581,6 +724,57 @@ export class RegistroProveedoresComponent implements OnInit {
                     severity: 'error',
                     summary: 'Error',
                     detail: 'No se pudo guardar el registro. Intenta de nuevo.'
+                });
+            }
+        });
+    }
+
+    // ── Edit Drawer ────────────────────────────────
+    openEditDrawer(record: RegistroProveedorRecord) {
+        this.editingRecordId = record.id || record._id || '';
+        this.formEdit = {
+            fechaEntrada: record.fechaEntrada || '',
+            horaEntrada: record.horaEntrada || '',
+            nombreProveedor: record.nombreProveedor || '',
+            compania: record.compania || '',
+            numeroGafete: record.numeroGafete || '',
+            agenteSeguridad: record.agenteSeguridad || '',
+            destino: record.destino || '',
+            horaSalida: record.horaSalida || '',
+            fechaSalida: record.fechaSalida || ''
+        };
+        this.editDrawerVisible = true;
+    }
+
+    submitEdit() {
+        const { nombreProveedor, compania, numeroGafete, agenteSeguridad, destino } = this.formEdit;
+
+        if (!nombreProveedor || !compania || !numeroGafete || !agenteSeguridad || !destino) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Campos requeridos',
+                detail: 'Por favor completa todos los campos requeridos.'
+            });
+            return;
+        }
+
+        this.submitting = true;
+        this.rpService.update(this.editingRecordId, this.formEdit).subscribe({
+            next: () => {
+                this.submitting = false;
+                this.editDrawerVisible = false;
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Registro Actualizado',
+                    detail: 'El registro se actualizó correctamente.'
+                });
+            },
+            error: () => {
+                this.submitting = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudo actualizar el registro.'
                 });
             }
         });

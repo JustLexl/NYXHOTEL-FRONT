@@ -69,6 +69,22 @@ export class RegistroProveedoresService {
         });
     }
 
+    update(id: string, record: Partial<RegistroProveedorRecord>): Observable<any> {
+        return new Observable(observer => {
+            this.http.put(`${this.apiUrl}/${id}`, record).subscribe({
+                next: (res) => {
+                    this.loadRecords();
+                    observer.next(res);
+                    observer.complete();
+                },
+                error: (err) => {
+                    console.error('Error updating registro proveedor', err);
+                    observer.error(err);
+                }
+            });
+        });
+    }
+
     registrarSalida(id: string): Observable<any> {
         return new Observable(observer => {
             this.http.put(`${this.apiUrl}/${id}/salida`, {}).subscribe({
