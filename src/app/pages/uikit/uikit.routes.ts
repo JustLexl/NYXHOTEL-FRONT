@@ -107,6 +107,12 @@ export default [
         canActivate: [SoloControlLlavesGuard],
         loadComponent: () => import('./lost-and-found').then(c => c.LostAndFoundComponent)
     },
+    {
+        path: 'RegistroProveedores',
+        data: { breadcrumb: 'Registro de Proveedores' },
+        canActivate: [SoloControlLlavesGuard],
+        loadComponent: () => import('./registro-proveedores').then(c => c.RegistroProveedoresComponent)
+    },
     { path: '**', redirectTo: '/notfound' },
 ] as Routes;
 

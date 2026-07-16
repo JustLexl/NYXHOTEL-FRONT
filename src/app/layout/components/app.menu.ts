@@ -45,6 +45,11 @@ export class AppMenu {
             icon: 'pi pi-briefcase',
             routerLink: ['/Inicio/LostAndFound']
         },
+        {
+            label: 'Registro de Proveedores',
+            icon: 'pi pi-truck',
+            routerLink: ['/Inicio/RegistroProveedores']
+        },
     ];
 
     filteredModel = computed(() => {
@@ -65,6 +70,9 @@ export class AppMenu {
                 return email === 'seguridad@nyxhotels.com';
             }
             if (item.label === 'Lost and Found') {
+                return email === 'seguridad@nyxhotels.com';
+            }
+            if (item.label === 'Registro de Proveedores') {
                 return email === 'seguridad@nyxhotels.com';
             }
             return true;
