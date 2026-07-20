@@ -37,21 +37,27 @@ export class CalidadReportesService {
 
     private recordsSubject = new BehaviorSubject<CalidadReporte[]>([]);
 
-    constructor(private http: HttpClient) {
-        this.loadRecords();
-    }
+    constructor(private http: HttpClient) {}
 
     private loadRecords() {
         this.http.get<any[]>(this.apiUrl).subscribe({
             next: (records) => {
-                const mapped = records.map(r => ({ ...r, id: r._id?.toString() || r.id }));
-                this.recordsSubject.next(mapped);
+                if (records && Array.isArray(records)) {
+                    const mapped = records.map(r => ({ ...r, id: r._id?.toString() || r.id }));
+                    this.recordsSubject.next(mapped);
+                } else {
+                    this.recordsSubject.next([]);
+                }
             },
-            error: (err) => console.error('Error loading calidad reports', err)
+            error: (err) => {
+                console.error('Error loading calidad reports', err);
+                this.recordsSubject.next([]);
+            }
         });
     }
 
     getRecords(): Observable<CalidadReporte[]> {
+        this.loadRecords();
         return this.recordsSubject.asObservable();
     }
 
