@@ -26,7 +26,7 @@ export class AppMenu {
             routerLink: ['/Inicio/ReporteGuardia']
         },
         {
-            label: 'Reportes de Guardia',
+            label: 'Registros de Guardia',
             icon: 'pi pi-list',
             routerLink: ['/Inicio/ReportesGuardia']
         },
@@ -50,6 +50,11 @@ export class AppMenu {
             icon: 'pi pi-truck',
             routerLink: ['/Inicio/RegistroProveedores']
         },
+        {
+            label: 'Calidad Reportes',
+            icon: 'pi pi-check-square',
+            routerLink: ['/Inicio/CalidadReportes']
+        },
     ];
 
     filteredModel = computed(() => {
@@ -61,7 +66,7 @@ export class AppMenu {
             return this.model.filter(item => item.label === 'Control de Llaves');
         }
 
-        // Filter out 'Seguridad', 'Control de Llaves', and 'Lost and Found' if the logged-in email is not seguridad@nyxhotels.com
+        // Filter out specific options if the logged-in email is not seguridad@nyxhotels.com
         const currentModel = this.model.filter(item => {
             if (item.label === 'Seguridad') {
                 return email === 'seguridad@nyxhotels.com';
@@ -74,6 +79,9 @@ export class AppMenu {
             }
             if (item.label === 'Registro de Proveedores') {
                 return email === 'seguridad@nyxhotels.com';
+            }
+            if (item.label === 'Calidad Reportes') {
+                return email === 'calidad@nyxhotels.com';
             }
             return true;
         });

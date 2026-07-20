@@ -262,14 +262,14 @@ import { AuthService } from '@/app/core/services/auth.service';
 
         <!-- Quién Entrega y Departamento -->
         <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nombre de quien entrega</label>
+            <div class="flex flex-col justify-end">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 min-h-[32px] flex items-end">Nombre de quien entrega</label>
                 <input type="text" [(ngModel)]="formAdd.nombreEntrega"
                     placeholder="Nombre completo"
                     class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
             </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Departamento de quien entrega</label>
+            <div class="flex flex-col justify-end">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 min-h-[32px] flex items-end">Departamento de quien entrega</label>
                 <input type="text" [(ngModel)]="formAdd.departamento"
                     placeholder="Ej. Ama de llaves, Mantenimiento..."
                     class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
@@ -400,10 +400,10 @@ import { AuthService } from '@/app/core/services/auth.service';
 </p-drawer>
 
 <!-- MODAL: VISUALIZAR FORMATO COMPLETO (ESTILO PAPEL IMPRESO) -->
-<div *ngIf="formatViewVisible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm no-print">
+<div *ngIf="formatViewVisible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
     <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 shadow-2xl flex flex-col">
         <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl no-print">
             <div class="flex items-center gap-2">
                 <i class="pi pi-file-pdf text-teal-600 text-xl"></i>
                 <span class="font-extrabold text-slate-800 text-base">Formato de Objeto Olvidado / Reclamado</span>
@@ -433,8 +433,8 @@ import { AuthService } from '@/app/core/services/auth.service';
                         <h2 class="text-lg font-black text-slate-900 uppercase tracking-wide">SEGURIDAD</h2>
                         <h3 class="text-sm font-extrabold text-slate-700 uppercase">RECEPCIÓN DE OBJETOS OLVIDADOS</h3>
                     </div>
-                    <div class="col-span-1 text-right">
-                        <div class="font-extrabold text-slate-800 text-base">HOTEL <span class="text-sky-600 text-lg font-black">NYX</span> CANCUN</div>
+                    <div class="col-span-1 text-right flex justify-end">
+                        <img src="layout/images/NyxHotelLogo-removebg-preview.png" alt="NYX Hotel Logo" class="h-10 object-contain" />
                     </div>
                 </div>
 
@@ -510,8 +510,8 @@ import { AuthService } from '@/app/core/services/auth.service';
                             ENTREGA DE OBJETOS OLVIDADOS / LOST AND FOUND RECLAIMED
                         </h3>
                     </div>
-                    <div class="col-span-1 text-right">
-                        <div class="font-extrabold text-slate-800 text-base">HOTEL <span class="text-sky-600 text-lg font-black">NYX</span> CANCUN</div>
+                    <div class="col-span-1 text-right flex justify-end">
+                        <img src="layout/images/NyxHotelLogo-removebg-preview.png" alt="NYX Hotel Logo" class="h-10 object-contain" />
                     </div>
                 </div>
 
@@ -548,6 +548,26 @@ import { AuthService } from '@/app/core/services/auth.service';
                         {{ viewRecord?.descripcionReclama || '—' }}
                     </div>
                 </div>
+
+                <!-- Firma y Nombre de Parte 2 -->
+                <div class="border border-slate-950 mt-4 text-xs">
+                    <div class="p-4 text-center flex flex-col justify-end min-h-[140px] items-center">
+                        <!-- Signature Image (arriba del nombre) -->
+                        <div class="flex items-end justify-center h-20 w-full mb-1">
+                            <img *ngIf="viewRecord?.firmaReclama" [src]="viewRecord?.firmaReclama" alt="Firma" class="max-h-20 max-w-xs object-contain" />
+                            <span *ngIf="!viewRecord?.firmaReclama" class="text-slate-400 italic self-center">No entregado / No firmado</span>
+                        </div>
+                        <!-- Line, Name, and Label -->
+                        <div class="border-t border-slate-950 pt-1 w-72">
+                            <div class="font-extrabold text-slate-900 text-sm">
+                                {{ viewRecord?.nombreReclama || '—' }}
+                            </div>
+                            <span class="uppercase text-[8px] font-black block text-slate-500 mt-0.5">
+                                Nombre y Firma del Huésped / Guest Name & Signature
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -572,9 +592,25 @@ import { AuthService } from '@/app/core/services/auth.service';
                 padding: 10px;
                 border: none !important;
                 box-shadow: none !important;
+                background: white !important;
             }
             .no-print {
                 display: none !important;
+            }
+            .fixed.inset-0 {
+                position: absolute !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+            .fixed.inset-0 > div {
+                border: none !important;
+                box-shadow: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                background: transparent !important;
             }
         }
     `]

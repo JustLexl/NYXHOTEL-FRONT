@@ -113,6 +113,12 @@ export default [
         canActivate: [SoloControlLlavesGuard],
         loadComponent: () => import('./registro-proveedores').then(c => c.RegistroProveedoresComponent)
     },
+    {
+        path: 'CalidadReportes',
+        data: { breadcrumb: 'Calidad Reportes' },
+        canActivate: [SoloControlLlavesGuard],
+        loadComponent: () => import('./calidad-reportes').then(c => c.CalidadReportesComponent)
+    },
     { path: '**', redirectTo: '/notfound' },
 ] as Routes;
 

@@ -29,7 +29,7 @@ import { firstValueFrom } from 'rxjs';
 <div *ngIf="!vistaDetalle" class="card main-content">
     <div class="font-semibold text-xl mb-4 text-slate-800 flex items-center gap-2">
         <span class="material-symbols-outlined text-teal-600">assignment</span>
-        <span>Reportes de Guardia Ejecutiva</span>
+        <span>Registro de Guardia Ejecutiva</span>
     </div>
 
     <p-table
@@ -94,7 +94,7 @@ import { firstValueFrom } from 'rxjs';
 
         <ng-template #body let-reporte>
             <tr class="hover:bg-teal-50/10 transition-colors border-b border-slate-100">
-                <td class="px-4 py-3 font-semibold text-slate-700 text-left align-middle">{{ reporte.nombreEjecutivo }}</td>
+                <td class="px-4 py-3 font-semibold text-slate-700 text-left align-middle uppercase">{{ reporte.nombreEjecutivo }}</td>
                 <td class="px-4 py-3 text-left align-middle">
                     <span class="inline-flex items-center gap-2 flex-wrap">
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-sm font-semibold">
@@ -149,8 +149,7 @@ import { firstValueFrom } from 'rxjs';
             <div class="flex items-center gap-4">
                 <img src="layout/images/NyxHotelLogo-removebg-preview.png" alt="NYX" class="h-14" />
                 <div>
-                    <p class="text-slate-800 font-extrabold text-xl leading-tight">Reporte de Guardia Ejecutiva</p>
-                    <p class="text-teal-600 text-sm font-semibold mt-0.5">{{ formatearFecha(selectedReporte.fecha) }} &mdash; {{ selectedReporte.nombreEjecutivo }}</p>
+                    <p class="text-slate-800 font-extrabold text-xl leading-tight">Registro de Guardia Ejecutiva</p>                    <p class="text-teal-600 text-sm font-semibold mt-0.5">{{ formatearFechaHora(selectedReporte.createdAt || selectedReporte.fecha).fecha }} &mdash; <span class="uppercase">{{ selectedReporte.nombreEjecutivo }}</span></p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -167,9 +166,9 @@ import { firstValueFrom } from 'rxjs';
         <!-- Barra decorativa -->
         <div class="h-1" style="background: linear-gradient(90deg, #0d9488, #1e40af, #7c3aed, #c2410c, #991b1b)"></div>
     </div>
-
+ 
     <div class="max-w-7xl mx-auto px-4 py-8 space-y-4">
-
+ 
         <!-- Tarjeta info general -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
             <div class="flex-1 flex items-center gap-4 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-6">
@@ -178,7 +177,7 @@ import { firstValueFrom } from 'rxjs';
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs uppercase tracking-widest font-semibold mb-0.5">Fecha del Turno</p>
-                    <p class="text-xl font-bold text-slate-800">{{ formatearFecha(selectedReporte.fecha) }}</p>
+                    <p class="text-xl font-bold text-slate-800">{{ formatearFechaHora(selectedReporte.createdAt || selectedReporte.fecha).fecha }}</p>
                 </div>
             </div>
             <div class="flex-1 flex items-center gap-4 md:pl-6">
@@ -187,9 +186,9 @@ import { firstValueFrom } from 'rxjs';
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs uppercase tracking-widest font-semibold mb-0.5">Ejecutivo de Guardia</p>
-                    <p class="text-xl font-bold text-slate-800">{{ selectedReporte.nombreEjecutivo }}</p>
+                    <p class="text-xl font-bold text-slate-800 uppercase">{{ selectedReporte.nombreEjecutivo }}</p>
                 </div>
-            </div>
+            </div>>
         </div>
 
         <!-- I. Áreas de Huéspedes -->
@@ -655,7 +654,7 @@ export class TableReportesGuardia implements OnInit {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(15);
         doc.setFont('helvetica', 'bold');
-        doc.text('REPORTE DE GUARDIA EJECUTIVA', textX, 13);
+        doc.text('REGISTRO DE GUARDIA EJECUTIVA', textX, 13);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         const { fecha, hora } = this.formatearFechaHora(r.createdAt || r.fecha);
@@ -788,7 +787,9 @@ export class TableReportesGuardia implements OnInit {
         comentario('Comentarios', r.comentariosColaboradores);
 
         (r.restaurantes || []).forEach(rest => {
-            const titulo = 'Restaurante: ' + rest.nombre + (rest.cerrado ? ' - CERRADO' : '');
+            const esBar = rest.nombre.toLowerCase().includes('bar');
+            const prefix = esBar ? 'Bar: ' : 'Restaurante: ';
+            const titulo = prefix + rest.nombre + (rest.cerrado ? ' - CERRADO' : '');
             sectionTitle(titulo, [194, 65, 12]);
             if (!rest.cerrado) {
                 renderItems(rest.items);
@@ -822,10 +823,17 @@ export class TableReportesGuardia implements OnInit {
                 if (sec.startsWith('rest_')) {
                     const idx = parseInt(sec.replace('rest_', ''), 10);
                     const rest = (r.restaurantes || [])[idx];
-                    return rest ? 'Restaurante: ' + rest.nombre : 'Restaurante ' + (idx + 1);
+                    if (rest) {
+                        const esBar = rest.nombre.toLowerCase().includes('bar');
+                        const prefix = esBar ? 'Bar: ' : 'Restaurante: ';
+                        return prefix + rest.nombre;
+                    }
+                    return 'Restaurante ' + (idx + 1);
                 }
                 return sec;
             };
+
+
 
             const imgW = 55;
             const imgH = 42;
@@ -833,12 +841,14 @@ export class TableReportesGuardia implements OnInit {
             const cols = 3;
 
             let hayEvidencias = false;
-            for (const sec of Object.keys(r.evidencias)) {
-                const imgs = (r.evidencias[sec] || []).filter(e => e.preview);
-                if (imgs.length > 0) { hayEvidencias = true; break; }
+            if (r.evidencias) {
+                for (const sec of Object.keys(r.evidencias)) {
+                    const imgs = (r.evidencias[sec] || []).filter(e => e.preview);
+                    if (imgs.length > 0) { hayEvidencias = true; break; }
+                }
             }
 
-            if (hayEvidencias) {
+            if (hayEvidencias && r.evidencias) {
                 sectionTitle('Evidencias Fotograficas', [30, 41, 59]);
 
                 for (const sec of Object.keys(r.evidencias)) {
