@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Table, TableModule } from 'primeng/table';
@@ -6,6 +6,8 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { DatePickerModule } from 'primeng/datepicker';
 import { ReporteGuardiaService, ReporteGuardia } from '../service/reporte-guardia.service';
 import jsPDF from 'jspdf';
 import { firstValueFrom } from 'rxjs';
@@ -21,6 +23,8 @@ import { firstValueFrom } from 'rxjs';
         InputTextModule,
         InputIconModule,
         IconFieldModule,
+        MultiSelectModule,
+        DatePickerModule,
     ],
     providers: [],
     template: `
@@ -79,10 +83,68 @@ import { firstValueFrom } from 'rxjs';
         <ng-template #header>
             <tr>
                 <th class="w-[45%] px-4 py-3 text-left font-semibold text-slate-600 bg-slate-50 border-b border-slate-200">
-                    <span>Ejecutivo de Guardia</span>
+                    <div class="flex justify-start items-center gap-2">
+                        <span>Ejecutivo de Guardia</span>
+                        <p-columnFilter 
+                            field="nombreEjecutivo" 
+                            matchMode="in" 
+                            display="menu"
+                            [showMatchModes]="false" 
+                            [showOperator]="false" 
+                            [showAddButton]="false"
+                            [showClearButton]="false"
+                            [showApplyButton]="false">
+                            <ng-template #filter let-value let-filterCallback="filterCallback">
+                                <div class="flex flex-col gap-2 p-1 min-w-[200px]" (click)="$event.stopPropagation()">
+                                    <span class="text-xs font-bold uppercase text-muted-color">Filtrar por Ejecutivo</span>
+                                    <p-multiSelect 
+                                        [ngModel]="value" 
+                                        [options]="ejecutivosNombres" 
+                                        placeholder="Seleccionar Ejecutivos" 
+                                        (onChange)="filterCallback($event.value)"
+                                        [filter]="true"
+                                        emptyFilterMessage="No se encontraron nombres"
+                                        class="w-full"
+                                        appendTo="body">
+                                    </p-multiSelect>
+                                </div>
+                            </ng-template>
+                        </p-columnFilter>
+                    </div>
                 </th>
                 <th class="w-[35%] px-4 py-3 text-left font-semibold text-slate-600 bg-slate-50 border-b border-slate-200">
-                    <span>Fecha y Hora de Creación</span>
+                    <div class="flex justify-start items-center gap-2">
+                        <span>Fecha y Hora de Creación</span>
+                        <p-columnFilter 
+                            #cfFecha
+                            field="fechaDate" 
+                            display="menu"
+                            [showMatchModes]="false" 
+                            [showOperator]="false" 
+                            [showAddButton]="false"
+                            [showClearButton]="false"
+                            [showApplyButton]="false">
+                            <ng-template #filter>
+                                <div class="flex flex-col gap-4 p-2 min-w-[220px]" (click)="$event.stopPropagation()">
+                                    <div class="flex flex-col gap-2">
+                                        <span class="text-xs font-bold uppercase text-muted-color">Seleccionar Fecha</span>
+                                        <p-datepicker 
+                                            [(ngModel)]="fechaFiltro" 
+                                            placeholder="dd/mm/yy" 
+                                            dateFormat="dd/mm/yy"
+                                            appendTo="body"
+                                            [showIcon]="true"
+                                            styleClass="w-full">
+                                        </p-datepicker>
+                                    </div>
+                                    <div class="flex justify-between mt-2 gap-2 border-t pt-3 border-[var(--p-datatable-border-color)]">
+                                        <p-button label="Limpiar" [outlined]="true" size="small" (click)="clearFechaFilter(cfFecha)"></p-button>
+                                        <p-button label="Aplicar" size="small" (click)="applyFechaFilter(cfFecha)"></p-button>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </p-columnFilter>
+                    </div>
                 </th>
                 <th class="w-[20%] px-4 py-3 text-center font-semibold text-slate-600 bg-slate-50 border-b border-slate-200">
                     <div class="flex justify-center items-center">
@@ -497,10 +559,13 @@ import { firstValueFrom } from 'rxjs';
     `]
 })
 export class TableReportesGuardia implements OnInit {
+    @ViewChild('dt1') dt1!: Table;
     reporteService = inject(ReporteGuardiaService);
     cdr = inject(ChangeDetectorRef);
 
-    reportes: ReporteGuardia[] = [];
+    reportes: any[] = [];
+    ejecutivosNombres: string[] = [];
+    fechaFiltro: Date | null = null;
     loading: boolean = true;
 
     // Vista: false = tabla, true = detalle completo
@@ -519,7 +584,17 @@ export class TableReportesGuardia implements OnInit {
         this.loading = true;
         this.reporteService.getReportes().subscribe({
             next: (data) => {
-                this.reportes = data || [];
+                const mapped = (data || []).map((r: any) => ({
+                    ...r,
+                    fechaDate: r.createdAt ? new Date(r.createdAt) : (r.fecha ? new Date(r.fecha) : null)
+                }));
+                mapped.sort((a: any, b: any) => {
+                    const tA = a.fechaDate ? a.fechaDate.getTime() : 0;
+                    const tB = b.fechaDate ? b.fechaDate.getTime() : 0;
+                    return tB - tA;
+                });
+                this.reportes = mapped;
+                this.ejecutivosNombres = Array.from(new Set(mapped.map((r: any) => r.nombreEjecutivo).filter(Boolean)));
                 this.loading = false;
                 this.cdr.detectChanges();
             },
@@ -591,8 +666,26 @@ export class TableReportesGuardia implements OnInit {
     clear(table: Table, inputGlobal: HTMLInputElement) {
         table.clear();
         table.filterGlobal('', 'contains');
+        this.fechaFiltro = null;
         if (inputGlobal) {
             inputGlobal.value = '';
+        }
+    }
+
+    applyFechaFilter(cf: any) {
+        if (this.dt1) {
+            this.dt1.filter(this.fechaFiltro, 'fechaDate', 'dateIs');
+            this.cdr.detectChanges();
+            if (cf) cf.hide();
+        }
+    }
+
+    clearFechaFilter(cf: any) {
+        this.fechaFiltro = null;
+        if (this.dt1) {
+            this.dt1.filter(null, 'fechaDate', 'dateIs');
+            this.cdr.detectChanges();
+            if (cf) cf.hide();
         }
     }
 

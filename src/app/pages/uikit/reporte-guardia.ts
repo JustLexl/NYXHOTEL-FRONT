@@ -590,11 +590,20 @@ class DbDraftService {
                     style="font-size:24px">expand_more</button>
             </div>
             <!-- Mensaje cuando está cerrado -->
-            <div *ngIf="rest.cerrado" class="px-6 py-5 flex items-center gap-3 bg-slate-50 border-t border-slate-200">
-                <span class="material-symbols-outlined text-slate-400" style="font-size:24px">do_not_disturb_on</span>
-                <div>
-                    <p class="text-slate-600 font-semibold text-sm">Este centro de consumo no opera hoy</p>
-                    <p class="text-slate-400 text-xs mt-0.5">Marcado como cerrado — no se requiere evaluación.</p>
+            <div *ngIf="rest.cerrado" class="px-6 py-5 flex flex-col gap-4 bg-slate-50 border-t border-slate-200">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-slate-400" style="font-size:24px">do_not_disturb_on</span>
+                    <div>
+                        <p class="text-slate-600 font-semibold text-sm">Este centro de consumo no opera hoy</p>
+                        <p class="text-slate-400 text-xs mt-0.5">Marcado como cerrado — no se requiere evaluación.</p>
+                    </div>
+                </div>
+                <!-- Comentarios del cierre -->
+                <div class="w-full">
+                    <label class="text-slate-500 text-xs font-semibold uppercase tracking-wider block mb-2">Comentarios / Observaciones del Cierre</label>
+                    <textarea [(ngModel)]="rest.comentarios" [name]="'comentarios_cerrado_' + ri" (ngModelChange)="guardarProgreso()" rows="2"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 bg-white resize-none"
+                        placeholder="Escribe comentarios sobre el cierre..."></textarea>
                 </div>
             </div>
             <div *ngIf="!rest.cerrado && seccionesAbiertas.has('rest_' + ri)">
