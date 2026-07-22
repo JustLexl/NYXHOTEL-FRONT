@@ -444,6 +444,14 @@ import { firstValueFrom } from 'rxjs';
                 <span *ngIf="!rest.cerrado" class="text-white/60 text-xs">{{ contarBien(rest.items) }} bien / {{ contarMal(rest.items) }} mal</span>
             </div>
             
+            <!-- Comentarios del Cierre si está cerrado -->
+            <div *ngIf="rest.cerrado && rest.comentarios" class="px-6 py-4 bg-slate-50 border-t border-slate-100">
+                <div class="bg-white border border-slate-200 rounded-xl p-4">
+                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Comentarios del Cierre</p>
+                    <p class="text-slate-700 text-sm whitespace-pre-wrap">{{ rest.comentarios }}</p>
+                </div>
+            </div>
+            
             <div *ngIf="!rest.cerrado" class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
@@ -887,6 +895,8 @@ export class TableReportesGuardia implements OnInit {
             if (!rest.cerrado) {
                 renderItems(rest.items);
                 comentario('Comentarios', rest.comentarios);
+            } else if (rest.comentarios) {
+                comentario('Comentarios del Cierre', rest.comentarios);
             }
         });
 
