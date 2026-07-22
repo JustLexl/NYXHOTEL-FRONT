@@ -145,6 +145,14 @@ import { AuthService } from '@/app/core/services/auth.service';
                         </td>
                         <td class="py-4 px-6 text-right flex justify-end gap-2">
                             <button
+                                *ngIf="item.fotos && item.fotos.length > 0"
+                                (click)="viewPhotos(item)"
+                                title="Ver Fotos del Objeto"
+                                class="bg-blue-600 text-white hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer flex items-center gap-1">
+                                <i class="pi pi-image"></i>
+                                Ver objetos
+                            </button>
+                            <button
                                 (click)="openFormatView(item)"
                                 title="Visualizar Formato"
                                 class="bg-slate-100 text-slate-600 hover:bg-teal-50 hover:text-teal-600 p-2 rounded-lg transition-all duration-150 border border-slate-200 cursor-pointer">
@@ -282,6 +290,32 @@ import { AuthService } from '@/app/core/services/auth.service';
             <input type="text" [(ngModel)]="formAdd.agenteSeguridad"
                 [placeholder]="loggedUserPlaceholder || 'Nombre del guardia que llena el registro'"
                 class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
+        </div>
+
+        <!-- Fotos del Objeto -->
+        <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Fotos del Objeto (Una o varias)</label>
+            <input type="file" accept="image/*" multiple (change)="onFotosSelected($event)" class="hidden" #fileInput />
+            <input type="file" accept="image/*" capture="environment" (change)="onFotosSelected($event)" class="hidden" #cameraInput />
+            <div class="flex flex-wrap gap-2 items-center">
+                <button type="button" (click)="fileInput.click()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer">
+                    <i class="pi pi-images"></i> Seleccionar Fotos
+                </button>
+                <button type="button" (click)="cameraInput.click()" class="bg-teal-50 hover:bg-teal-100 text-teal-700 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer">
+                    <i class="pi pi-camera"></i> Tomar Foto
+                </button>
+                <span class="text-xs text-slate-400 font-medium">{{ formAdd.fotos.length }} foto(s) cargada(s)</span>
+            </div>
+            
+            <!-- Previews -->
+            <div class="flex flex-wrap gap-2 mt-3" *ngIf="formAdd.fotos.length > 0">
+                <div *ngFor="let foto of formAdd.fotos; let idx = index" class="relative w-16 h-16 border border-slate-300 rounded-lg overflow-hidden group">
+                    <img [src]="foto" class="w-full h-full object-cover" />
+                    <button type="button" (click)="removeFoto(idx)" class="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        <i class="pi pi-trash text-sm"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Submit -->
@@ -569,7 +603,36 @@ import { AuthService } from '@/app/core/services/auth.service';
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
+<!-- MODAL: VISUALIZAR FOTOS DEL OBJETO -->
+<div *ngIf="photoViewVisible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-200 shadow-2xl flex flex-col">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+            <div class="flex items-center gap-2">
+                <i class="pi pi-image text-blue-600 text-xl"></i>
+                <span class="font-extrabold text-slate-800 text-base">Fotos del Objeto</span>
+            </div>
+            <button
+                (click)="photoViewVisible = false"
+                class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer">
+                Cerrar
+            </button>
+        </div>
+
+        <!-- Photos Body -->
+        <div class="p-6 flex flex-col gap-4 overflow-y-auto">
+            <p class="text-xs text-slate-500 font-semibold mb-2">
+                Descripción: <span class="text-slate-800 font-bold">{{ selectedPhotoRecord?.descripcionEncontrado }}</span>
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let foto of selectedPhotoRecord?.fotos" class="border border-slate-200 rounded-xl overflow-hidden shadow-sm flex items-center justify-center bg-slate-100 p-2">
+                    <img [src]="foto" class="max-h-[300px] max-w-full object-contain rounded-lg" />
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -628,10 +691,12 @@ export class LostAndFoundComponent implements OnInit {
     addDrawerVisible = false;
     deliveryDrawerVisible = false;
     formatViewVisible = false;
+    photoViewVisible = false;
 
     // Selected record for details or delivery
     selectedRecord: LostAndFoundRecord | null = null;
     viewRecord: LostAndFoundRecord | null = null;
+    selectedPhotoRecord: LostAndFoundRecord | null = null;
 
     // Forms objects
     formAdd = {
@@ -642,7 +707,8 @@ export class LostAndFoundComponent implements OnInit {
         horaEncontrado: '',
         descripcionEncontrado: '',
         esDeValor: false,
-        agenteSeguridad: ''
+        agenteSeguridad: '',
+        fotos: [] as string[]
     };
 
     formDelivery = {
@@ -762,6 +828,73 @@ export class LostAndFoundComponent implements OnInit {
         this.formatViewVisible = true;
     }
 
+    viewPhotos(record: LostAndFoundRecord) {
+        this.selectedPhotoRecord = record;
+        this.photoViewVisible = true;
+    }
+
+    async onFotosSelected(event: any) {
+        const files: FileList = event.target.files;
+        if (!files || files.length === 0) return;
+
+        for (let i = 0; i < files.length; i++) {
+            try {
+                const compressed = await this.compressImage(files[i]);
+                this.formAdd.fotos.push(compressed);
+            } catch (err) {
+                console.error('Error compressing image:', err);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo comprimir la imagen.' });
+            }
+        }
+    }
+
+    removeFoto(index: number) {
+        this.formAdd.fotos.splice(index, 1);
+    }
+
+    compressImage(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(dataUrl);
+                    } else {
+                        reject(new Error('Canvas context not available'));
+                    }
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    }
+
     printFormat() {
         window.print();
     }
@@ -780,7 +913,8 @@ export class LostAndFoundComponent implements OnInit {
             horaEncontrado: localTime,
             descripcionEncontrado: '',
             esDeValor: false,
-            agenteSeguridad: ''  // vacío — el usuario verá el placeholder con su nombre
+            agenteSeguridad: '',  // vacío — el usuario verá el placeholder con su nombre
+            fotos: []
         };
     }
 
@@ -914,6 +1048,18 @@ export class LostAndFoundComponent implements OnInit {
     deleteRecord(record: LostAndFoundRecord) {
         const id = record.id || record._id;
         if (!id) return;
+
+        let password = prompt('Ingrese la contraseña para eliminar:');
+        while (password !== '2080') {
+            if (password === null) {
+                return; // User clicked Cancel/Exit
+            }
+            const retry = confirm('Contraseña incorrecta. ¿Desea intentar de nuevo?');
+            if (!retry) {
+                return; // User chose to exit (cancel)
+            }
+            password = prompt('Ingrese la contraseña para eliminar:');
+        }
 
         this.confirmationService.confirm({
             message: '¿Está seguro de que desea eliminar este registro de Lost and Found?',

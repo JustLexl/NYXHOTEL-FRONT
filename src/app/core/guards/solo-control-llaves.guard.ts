@@ -5,7 +5,6 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-const SOLO_CONTROL_LLAVES_EMAIL = 'supervisoresseguridad@nyxhotel.com';
 
 @Injectable({
     providedIn: 'root'
@@ -24,19 +23,23 @@ export class SoloControlLlavesGuard implements CanActivate {
             return toObservable(this.authService.isProfileLoaded, { injector: this.injector }).pipe(
                 filter(loaded => loaded === true),
                 take(1),
-                map(() => this.checkAccess())
+                map(() => this.checkAccess(route))
             );
         }
 
-        return this.checkAccess();
+        return this.checkAccess(route);
     }
 
-    private checkAccess(): boolean {
+    private checkAccess(route: ActivatedRouteSnapshot): boolean {
         const profile = this.authService.userProfile();
         const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
 
-        // Si es el supervisor de seguridad, solo puede ver ControlLlaves — bloquear cualquier otra sección
-        if (email === SOLO_CONTROL_LLAVES_EMAIL) {
+        // Si es el supervisor de seguridad, solo puede ver ControlLlaves, LostAndFound y RegistroProveedores
+        if (email === 'supervisoresseguridad@nyxhotel.com' || email === 'supervisoresseguridad@nyxhotels.com') {
+            const path = route.routeConfig?.path;
+            if (path === 'ControlLlaves' || path === 'LostAndFound' || path === 'RegistroProveedores') {
+                return true;
+            }
             this.router.navigate(['/Inicio/ControlLlaves']);
             return false;
         }

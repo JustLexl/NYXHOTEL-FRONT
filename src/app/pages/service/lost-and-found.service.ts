@@ -26,6 +26,7 @@ export interface LostAndFoundRecord {
     horaReclama?: string;
     descripcionReclama?: string;
     firmaReclama?: string;
+    fotos?: string[];
     createdAt?: string;
     updatedAt?: string;
 }
