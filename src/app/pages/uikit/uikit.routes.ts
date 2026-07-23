@@ -3,6 +3,7 @@ import { RoleGuard } from '@/app/core/guards/role.guard';
 import { SeguridadGuard } from '@/app/core/guards/seguridad.guard';
 import { ControlLlavesGuard } from '@/app/core/guards/control-llaves.guard';
 import { SoloControlLlavesGuard } from '@/app/core/guards/solo-control-llaves.guard';
+import { SistemasGuard } from '@/app/core/guards/sistemas.guard';
 
 export default [
     {
@@ -118,6 +119,18 @@ export default [
         data: { breadcrumb: 'Calidad Reportes' },
         canActivate: [SoloControlLlavesGuard],
         loadComponent: () => import('./calidad-reportes').then(c => c.CalidadReportesComponent)
+    },
+    {
+        path: 'GestionCuentas',
+        data: { breadcrumb: 'Gestión de Cuentas' },
+        canActivate: [SoloControlLlavesGuard, SistemasGuard],
+        loadComponent: () => import('./tableGestionCuentas').then(c => c.TableGestionCuentas)
+    },
+    {
+        path: 'TareasDistintivoH',
+        data: { breadcrumb: 'Tareas de Distintivo H' },
+        canActivate: [SoloControlLlavesGuard],
+        loadComponent: () => import('./tareas-distintivo-h').then(c => c.TareasDistintivoHComponent)
     },
     { path: '**', redirectTo: '/notfound' },
 ] as Routes;
