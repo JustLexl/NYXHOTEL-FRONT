@@ -65,6 +65,11 @@ export class AppMenu {
             icon: 'pi pi-key',
             routerLink: ['/Inicio/GestionCuentas']
         },
+        {
+            label: 'Inventario NYX',
+            icon: 'pi pi-desktop',
+            routerLink: ['/Inicio/InventarioNyx']
+        },
     ];
 
     filteredModel = computed(() => {
@@ -83,6 +88,9 @@ export class AppMenu {
         // Filter out specific options if the logged-in email is not seguridad@nyxhotels.com
         const currentModel = this.model.filter(item => {
             if (item.label === 'Gestión de Cuentas') {
+                return email === 'sistemas@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com';
+            }
+            if (item.label === 'Inventario NYX') {
                 return email === 'sistemas@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com';
             }
             if (item.label === 'Seguridad') {

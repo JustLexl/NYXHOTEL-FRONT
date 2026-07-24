@@ -127,6 +127,12 @@ export default [
         loadComponent: () => import('./tableGestionCuentas').then(c => c.TableGestionCuentas)
     },
     {
+        path: 'InventarioNyx',
+        data: { breadcrumb: 'Inventario NYX' },
+        canActivate: [SoloControlLlavesGuard, SistemasGuard],
+        loadComponent: () => import('./tableInventarioNyx').then(c => c.TableInventarioNyx)
+    },
+    {
         path: 'TareasDistintivoH',
         data: { breadcrumb: 'Tareas de Distintivo H' },
         canActivate: [SoloControlLlavesGuard],
