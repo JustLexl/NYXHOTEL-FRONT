@@ -23,6 +23,7 @@ export class ControlLlavesGuard implements CanActivate {
                 filter(loaded => loaded === true),
                 take(1),
                 map(() => this.checkAccess())
+                
             );
         }
 

@@ -73,9 +73,9 @@ export class AppMenu {
 
         // supervisoresseguridad solo puede ver Control de Llaves, Lost and Found y Registro de Proveedores
         if (email === 'supervisoresseguridad@nyxhotel.com' || email === 'supervisoresseguridad@nyxhotels.com') {
-            return this.model.filter(item => 
-                item.label === 'Control de Llaves' || 
-                item.label === 'Lost and Found' || 
+            return this.model.filter(item =>
+                item.label === 'Control de Llaves' ||
+                item.label === 'Lost and Found' ||
                 item.label === 'Registro de Proveedores'
             );
         }
@@ -86,19 +86,22 @@ export class AppMenu {
                 return email === 'sistemas@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com';
             }
             if (item.label === 'Seguridad') {
-                return email === 'seguridad@nyxhotels.com';
+                return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
             }
             if (item.label === 'Control de Llaves') {
-                return email === 'seguridad@nyxhotels.com';
+                return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
             }
             if (item.label === 'Lost and Found') {
-                return email === 'seguridad@nyxhotels.com';
+                return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
             }
             if (item.label === 'Registro de Proveedores') {
-                return email === 'seguridad@nyxhotels.com';
+                return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
             }
             if (item.label === 'Calidad Reportes') {
-                return email === 'calidad@nyxhotels.com';
+                return email === 'calidad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
+            }
+            if (item.label === 'Tareas de Distintivo H') {
+                return email === 'calidad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
             }
             return true;
         });

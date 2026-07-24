@@ -33,7 +33,7 @@ export class SeguridadGuard implements CanActivate {
         const profile = this.authService.userProfile();
         const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
 
-        if (email === 'seguridad@nyxhotels.com') {
+        if (email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com') {
             return true;
         }
 

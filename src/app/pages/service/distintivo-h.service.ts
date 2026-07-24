@@ -46,14 +46,22 @@ export class DistintivoHService {
     private loadRecords() {
         this.http.get<any[]>(this.apiUrl).subscribe({
             next: (records) => {
-                const mapped = records.map(r => ({
-                    ...r,
-                    id: r._id?.toString() || r.id,
-                    seccion: r.seccion || 'AYB'
-                }));
-                this.recordsSubject.next(mapped);
+                if (Array.isArray(records)) {
+                    const mapped = records.map(r => ({
+                        ...r,
+                        id: r._id?.toString() || r.id,
+                        seccion: r.seccion || 'AYB'
+                    }));
+                    this.recordsSubject.next(mapped);
+                } else {
+                    this.recordsSubject.next([]);
+                }
             },
-            error: (err) => console.error('Error loading Distintivo H records', err)
+            error: (err) => {
+                console.error('Error loading Distintivo H records:', err);
+                console.warn(`Verifica que el servicio Backend (NYXHOTEL-BACK) esté ejecutándose correctamente en: ${this.apiUrl}`);
+                this.recordsSubject.next([]);
+            }
         });
     }
 
