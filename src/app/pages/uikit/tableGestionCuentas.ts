@@ -13,6 +13,9 @@ import { DrawerModule } from 'primeng/drawer';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { Cuenta, CuentasService } from '../service/cuentas.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 @Component({
     selector: 'app-tableGestionCuentas',
@@ -57,13 +60,29 @@ import { Cuenta, CuentasService } from '../service/cuentas.service';
             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} registros encontrados">
 
             <ng-template #caption>
-                <div class="flex justify-between items-center w-full">
-                    <div>
+                <div class="flex justify-between items-center w-full flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
                         <p-button
                             label="Limpiar"
                             [outlined]="true"
                             icon="pi pi-filter-slash"
                             (click)="clear(dt1, filterGlobal)" />
+                        <p-button
+                            label="Excel"
+                            icon="pi pi-file-excel"
+                            severity="success"
+                            [outlined]="true"
+                            (click)="exportarExcel()"
+                            pTooltip="Exportar tabla a Excel"
+                            tooltipPosition="bottom" />
+                        <p-button
+                            label="PDF"
+                            icon="pi pi-file-pdf"
+                            severity="danger"
+                            [outlined]="true"
+                            (click)="exportarPDF()"
+                            pTooltip="Exportar tabla a PDF"
+                            tooltipPosition="bottom" />
                     </div>
 
                     <div class="flex items-center gap-4">
@@ -162,7 +181,7 @@ import { Cuenta, CuentasService } from '../service/cuentas.service';
                         </div>
                     </th>
 
-                    <th class="w-[6%] px-4 py-3">
+                    <th class="w-[140px] px-4 py-3">
                         <div class="flex justify-center items-center font-semibold">Acciones</div>
                     </th>
                 </tr>
@@ -181,6 +200,8 @@ import { Cuenta, CuentasService } from '../service/cuentas.service';
                             <button
                                 type="button"
                                 (click)="editarCuenta(cuenta)"
+                                pTooltip="Editar"
+                                tooltipPosition="top"
                                 class="flex items-center justify-center w-8 h-8 rounded-md border
                                    bg-[#bfdbfe] border-[#60a5fa] text-[#1d4ed8]
                                    hover:brightness-95 cursor-pointer transition-all shadow-sm active:scale-95">
@@ -189,6 +210,8 @@ import { Cuenta, CuentasService } from '../service/cuentas.service';
                             <button
                                 type="button"
                                 (click)="eliminarCuenta(cuenta)"
+                                pTooltip="Eliminar"
+                                tooltipPosition="top"
                                 class="flex items-center justify-center w-8 h-8 rounded-md border
                                    bg-[#fecaca] border-[#f87171] text-[#b91c1c]
                                    hover:brightness-95 cursor-pointer transition-all shadow-sm active:scale-95">
@@ -499,5 +522,65 @@ export class TableGestionCuentas implements OnInit {
         if (inputGlobal) {
             inputGlobal.value = '';
         }
+    }
+
+    exportarExcel() {
+        const dataToExport = (this.dt1 && this.dt1.filteredValue) ? this.dt1.filteredValue : this.cuentasLista;
+        if (!dataToExport || dataToExport.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay registros para exportar' });
+            return;
+        }
+        const excelData = dataToExport.map(c => ({
+            'Nombre': c.nombre || '',
+            'Departamento': c.departamento || '',
+            'Puesto': c.puesto || '',
+            'Tipo de Cuenta': c.tipoCuenta || '',
+            'Correo': c.correo || '',
+            'Contraseña': c.contrasena || ''
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Cuentas');
+        XLSX.writeFile(workbook, `Gestion_de_Cuentas_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        this.messageService.add({ severity: 'success', summary: 'Exportado', detail: 'Tabla exportada a Excel correctamente' });
+    }
+
+    exportarPDF() {
+        const dataToExport = (this.dt1 && this.dt1.filteredValue) ? this.dt1.filteredValue : this.cuentasLista;
+        if (!dataToExport || dataToExport.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay registros para exportar' });
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        
+        doc.setFontSize(16);
+        doc.setTextColor(30, 41, 59);
+        doc.text('Gestión de Cuentas - NYX Hotel', 14, 15);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Fecha de exportación: ${new Date().toLocaleDateString('es-MX')} ${new Date().toLocaleTimeString('es-MX')}`, 14, 22);
+
+        const headers = [['Nombre', 'Departamento', 'Puesto', 'Tipo de Cuenta', 'Correo', 'Contraseña']];
+        const rows = dataToExport.map(c => [
+            c.nombre || '',
+            c.departamento || '',
+            c.puesto || '',
+            c.tipoCuenta || '',
+            c.correo || '',
+            c.contrasena || ''
+        ]);
+
+        autoTable(doc, {
+            head: headers,
+            body: rows,
+            startY: 26,
+            styles: { fontSize: 9, cellPadding: 3 },
+            headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+        });
+
+        doc.save(`Gestion_de_Cuentas_${new Date().toISOString().slice(0, 10)}.pdf`);
+        this.messageService.add({ severity: 'success', summary: 'Exportado', detail: 'Tabla exportada a PDF correctamente' });
     }
 }

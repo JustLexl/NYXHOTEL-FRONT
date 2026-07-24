@@ -14,6 +14,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { TextareaModule } from 'primeng/textarea';
 import { InventarioItem, InventarioService } from '../service/inventario.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 @Component({
     selector: 'app-tableInventarioNyx',
@@ -59,13 +62,29 @@ import { InventarioItem, InventarioService } from '../service/inventario.service
             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} registros encontrados">
 
             <ng-template #caption>
-                <div class="flex justify-between items-center w-full">
-                    <div>
+                <div class="flex justify-between items-center w-full flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
                         <p-button
                             label="Limpiar"
                             [outlined]="true"
                             icon="pi pi-filter-slash"
                             (click)="clear(dt1, filterGlobal)" />
+                        <p-button
+                            label="Excel"
+                            icon="pi pi-file-excel"
+                            severity="success"
+                            [outlined]="true"
+                            (click)="exportarExcel()"
+                            pTooltip="Exportar tabla a Excel"
+                            tooltipPosition="bottom" />
+                        <p-button
+                            label="PDF"
+                            icon="pi pi-file-pdf"
+                            severity="danger"
+                            [outlined]="true"
+                            (click)="exportarPDF()"
+                            pTooltip="Exportar tabla a PDF"
+                            tooltipPosition="bottom" />
                     </div>
 
                     <div class="flex items-center gap-4">
@@ -200,7 +219,7 @@ import { InventarioItem, InventarioService } from '../service/inventario.service
                         </div>
                     </th>
 
-                    <th class="w-[6%] px-4 py-3">
+                    <th class="w-[140px] px-4 py-3">
                         <div class="flex justify-center items-center font-semibold">Acciones</div>
                     </th>
                 </tr>
@@ -229,6 +248,8 @@ import { InventarioItem, InventarioService } from '../service/inventario.service
                             <button
                                 type="button"
                                 (click)="editarItem(item)"
+                                pTooltip="Editar"
+                                tooltipPosition="top"
                                 class="flex items-center justify-center w-8 h-8 rounded-md border
                                    bg-[#bfdbfe] border-[#60a5fa] text-[#1d4ed8]
                                    hover:brightness-95 cursor-pointer transition-all shadow-sm active:scale-95">
@@ -237,6 +258,8 @@ import { InventarioItem, InventarioService } from '../service/inventario.service
                             <button
                                 type="button"
                                 (click)="eliminarItem(item)"
+                                pTooltip="Eliminar"
+                                tooltipPosition="top"
                                 class="flex items-center justify-center w-8 h-8 rounded-md border
                                    bg-[#fecaca] border-[#f87171] text-[#b91c1c]
                                    hover:brightness-95 cursor-pointer transition-all shadow-sm active:scale-95">
@@ -587,5 +610,74 @@ export class TableInventarioNyx implements OnInit {
         if (inputGlobal) {
             inputGlobal.value = '';
         }
+    }
+
+    exportarExcel() {
+        const dataToExport = (this.dt1 && this.dt1.filteredValue) ? this.dt1.filteredValue : this.inventarioLista;
+        if (!dataToExport || dataToExport.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay registros para exportar' });
+            return;
+        }
+        const excelData = dataToExport.map(i => ({
+            'Departamento': i.departamento || '',
+            'Puesto': i.puesto || '',
+            'Nombre del Equipo': i.nombreEquipo || '',
+            'Equipo': i.equipo || '',
+            'Marca y Modelo': i.marcaModelo || '',
+            'Número de Serie': i.numeroSerie || '',
+            'Memoria': i.memoria || '',
+            'Versión SO': i.versionSO || '',
+            'Comentarios': i.comentarios || ''
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventario_NYX');
+        XLSX.writeFile(workbook, `Inventario_NYX_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        this.messageService.add({ severity: 'success', summary: 'Exportado', detail: 'Tabla exportada a Excel correctamente' });
+    }
+
+    exportarPDF() {
+        const dataToExport = (this.dt1 && this.dt1.filteredValue) ? this.dt1.filteredValue : this.inventarioLista;
+        if (!dataToExport || dataToExport.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay registros para exportar' });
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+        doc.setFontSize(16);
+        doc.setTextColor(30, 41, 59);
+        doc.text('Inventario NYX Hotel Cancún', 14, 15);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Fecha de exportación: ${new Date().toLocaleDateString('es-MX')} ${new Date().toLocaleTimeString('es-MX')}`, 14, 22);
+
+        const headers = [['Departamento', 'Puesto', 'Nombre Equipo', 'Equipo', 'Marca/Modelo', 'Num. Serie', 'Memoria', 'Versión SO', 'Comentarios']];
+        const rows = dataToExport.map(i => [
+            i.departamento || '',
+            i.puesto || '',
+            i.nombreEquipo || '',
+            i.equipo || '',
+            i.marcaModelo || '',
+            i.numeroSerie || '',
+            i.memoria || '',
+            i.versionSO || '',
+            i.comentarios || ''
+        ]);
+
+        autoTable(doc, {
+            head: headers,
+            body: rows,
+            startY: 26,
+            styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+            headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            columnStyles: {
+                8: { cellWidth: 50 }
+            }
+        });
+
+        doc.save(`Inventario_NYX_${new Date().toISOString().slice(0, 10)}.pdf`);
+        this.messageService.add({ severity: 'success', summary: 'Exportado', detail: 'Tabla exportada a PDF correctamente' });
     }
 }
