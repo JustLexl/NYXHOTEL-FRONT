@@ -61,7 +61,7 @@ import * as XLSX from 'xlsx';
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} registros encontrados">
 
-            <ng-template #caption>
+            <ng-template pTemplate="caption">
                 <div class="flex justify-between items-center w-full flex-wrap gap-2">
                     <div class="flex items-center gap-2">
                         <p-button
