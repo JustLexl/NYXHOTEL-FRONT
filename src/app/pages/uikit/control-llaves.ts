@@ -150,8 +150,9 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
         </div>
     </div>
 
-    <!-- Two Tables Side by Side with Aligned Rows -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <!-- Two Tables Side by Side with Aligned Rows (Horizontal en teléfonos y tablets) -->
+    <div class="w-full overflow-x-auto pb-2">
+        <div class="grid grid-cols-2 gap-4 min-w-[750px] lg:min-w-0">
 
         <!-- LEFT TABLE: Entregadas -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -343,6 +344,7 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
                 </table>
             </div>
         </div>
+    </div>
     </div>
 </div>
 

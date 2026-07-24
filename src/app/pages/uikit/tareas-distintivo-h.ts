@@ -906,14 +906,37 @@ export class TareasDistintivoHComponent implements OnInit {
     }
 
     onSeccionFormChange(sec: SeccionDistintivoH) {
-        // In create mode: just switch the active section, each section keeps its own hallazgos
-        // In edit mode: change the single record section
         this.formObservation.seccion = sec;
         this.formObservation.responsableDepto = this.getDefaultResponsable(sec);
+
+        if (this.isEditing) {
+            // Buscar si existe un registro ya guardado para la nueva sección con la misma fecha
+            const matchingRecord = this.records.find(r =>
+                (r.seccion || 'AYB') === sec && r.fecha === this.formObservation.fecha
+            );
+
+            if (matchingRecord) {
+                this.editingId = matchingRecord.id || matchingRecord._id || null;
+                this.formObservation.mesAuditoria = matchingRecord.mesAuditoria || this.formObservation.mesAuditoria;
+                this.formObservation.responsableDepto = matchingRecord.responsableDepto || this.getDefaultResponsable(sec);
+                this.formObservation.hallazgos = matchingRecord.hallazgos ? matchingRecord.hallazgos.map(h => ({ ...h })) : [
+                    { hallazgo: '', area: '', responsable: matchingRecord.responsableDepto || this.getDefaultResponsable(sec), realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
+                ];
+            } else {
+                // Si no existe registro previo en esa sección para esta fecha, inicializar vacíos los hallazgos
+                this.editingId = null;
+                this.formObservation.hallazgos = [
+                    { hallazgo: '', area: '', responsable: this.getDefaultResponsable(sec), realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
+                ];
+            }
+        }
     }
 
-    /** Returns the hallazgos list for the currently active form section (create mode) */
+    /** Returns the hallazgos list for the currently active form section (create or edit mode) */
     getCurrentSeccionHallazgos(): HallazgoItem[] {
+        if (this.isEditing) {
+            return this.formObservation.hallazgos;
+        }
         return this.hallazgosPorSeccion[this.formObservation.seccion];
     }
 
@@ -1055,8 +1078,8 @@ export class TareasDistintivoHComponent implements OnInit {
             return;
         }
 
-        // ── EDIT MODE: update the single record ──
-        if (this.isEditing && this.editingId) {
+        // ── EDIT MODE: update the single record or create if switching section without existing record ──
+        if (this.isEditing) {
             const validHallazgos = this.formObservation.hallazgos.filter(h => h.hallazgo.trim() !== '');
             if (validHallazgos.length === 0) {
                 this.messageService.add({ severity: 'warn', summary: 'Hallazgo requerido', detail: 'Por favor ingrese al menos un hallazgo.' });
@@ -1071,15 +1094,20 @@ export class TareasDistintivoHComponent implements OnInit {
                 titulo: this.formObservation.titulo,
                 hallazgos: validHallazgos
             };
-            this.dhService.update(this.editingId, payload).subscribe({
+
+            const request$ = this.editingId
+                ? this.dhService.update(this.editingId, payload)
+                : this.dhService.create(payload);
+
+            request$.subscribe({
                 next: () => {
-                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Observación actualizada correctamente.' });
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Observación guardada correctamente.' });
                     this.addDrawerVisible = false;
                     this.resetForm();
                     this.dhService.refresh();
                 },
                 error: () => {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar la observación.' });
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la observación.' });
                 }
             });
             return;
