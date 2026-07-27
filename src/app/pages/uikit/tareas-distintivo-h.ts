@@ -922,30 +922,33 @@ export class TareasDistintivoHComponent implements OnInit {
                 this.editingId = matchingRecord.id || matchingRecord._id || null;
                 this.formObservation.mesAuditoria = matchingRecord.mesAuditoria || this.formObservation.mesAuditoria;
                 this.formObservation.responsableDepto = matchingRecord.responsableDepto || this.getDefaultResponsable(sec);
-                this.formObservation.hallazgos = matchingRecord.hallazgos ? matchingRecord.hallazgos.map(h => ({ ...h })) : [
-                    { hallazgo: '', area: '', responsable: matchingRecord.responsableDepto || this.getDefaultResponsable(sec), realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
-                ];
+                // Si la sección ya tiene borrador activo cargado por el usuario, mantenerlo. Si está vacío, cargar del registro.
+                const hasUserDraft = this.hallazgosPorSeccion[sec] && this.hallazgosPorSeccion[sec].some(h => h.hallazgo.trim() !== '');
+                if (!hasUserDraft) {
+                    this.hallazgosPorSeccion[sec] = matchingRecord.hallazgos ? matchingRecord.hallazgos.map(h => ({ ...h })) : [
+                        { hallazgo: '', area: '', responsable: matchingRecord.responsableDepto || this.getDefaultResponsable(sec), realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
+                    ];
+                }
             } else {
-                // Si no existe registro previo en esa sección para esta fecha, inicializar vacíos los hallazgos
+                // Si no existe registro previo en esa sección para esta fecha y no hay borrador, inicializar vacíos
                 this.editingId = null;
-                this.formObservation.hallazgos = [
-                    { hallazgo: '', area: '', responsable: this.getDefaultResponsable(sec), realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
-                ];
+                if (!this.hallazgosPorSeccion[sec] || this.hallazgosPorSeccion[sec].length === 0) {
+                    this.hallazgosPorSeccion[sec] = [
+                        { hallazgo: '', area: '', responsable: this.getDefaultResponsable(sec), realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
+                    ];
+                }
             }
         }
     }
 
-    /** Returns the hallazgos list for the currently active form section (create or edit mode) */
+    /** Returns the hallazgos list for the currently active form section */
     getCurrentSeccionHallazgos(): HallazgoItem[] {
-        if (this.isEditing) {
-            return this.formObservation.hallazgos;
-        }
         return this.hallazgosPorSeccion[this.formObservation.seccion];
     }
 
     /** How many non-empty hallazgos does a section's draft have? */
     getSeccionDraftCount(sec: SeccionDistintivoH): number {
-        return this.hallazgosPorSeccion[sec].filter(h => h.hallazgo.trim() !== '').length;
+        return (this.hallazgosPorSeccion[sec] || []).filter(h => h.hallazgo && h.hallazgo.trim() !== '').length;
     }
 
     getSeccionRecords(): DistintivoHRecord[] {
@@ -1016,31 +1019,16 @@ export class TareasDistintivoHComponent implements OnInit {
         const currentSec = this.formObservation.seccion;
         const defaultResp = this.formObservation.responsableDepto || this.getDefaultResponsable(currentSec);
 
-        if (this.isEditing) {
-            // Edit mode: push to the single record's hallazgos
-            this.formObservation.hallazgos.push({
-                hallazgo: '', area: '', responsable: defaultResp,
-                realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: ''
-            });
-        } else {
-            // Create mode: push to the current section's draft
-            this.hallazgosPorSeccion[currentSec].push({
-                hallazgo: '', area: '', responsable: defaultResp,
-                realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: ''
-            });
-        }
+        this.hallazgosPorSeccion[currentSec].push({
+            hallazgo: '', area: '', responsable: defaultResp,
+            realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: ''
+        });
     }
 
     removeHallazgoRow(index: number) {
-        if (this.isEditing) {
-            if (this.formObservation.hallazgos.length > 1) {
-                this.formObservation.hallazgos.splice(index, 1);
-            }
-        } else {
-            const sec = this.formObservation.seccion;
-            if (this.hallazgosPorSeccion[sec].length > 1) {
-                this.hallazgosPorSeccion[sec].splice(index, 1);
-            }
+        const sec = this.formObservation.seccion;
+        if (this.hallazgosPorSeccion[sec].length > 1) {
+            this.hallazgosPorSeccion[sec].splice(index, 1);
         }
     }
 
@@ -1050,19 +1038,26 @@ export class TareasDistintivoHComponent implements OnInit {
     }
 
     openEditDrawer(item: DistintivoHRecord) {
+        this.resetForm();
         this.isEditing = true;
         this.editingId = item.id || item._id || null;
+
+        const initialSeccion = item.seccion || this.activeSeccion;
         this.formObservation = {
-            seccion: item.seccion || this.activeSeccion,
+            seccion: initialSeccion,
             fecha: item.fecha,
             mesAuditoria: item.mesAuditoria || '',
-            responsableDepto: item.responsableDepto || this.getDefaultResponsable(item.seccion || this.activeSeccion),
+            responsableDepto: item.responsableDepto || this.getDefaultResponsable(initialSeccion),
             auditor: 'Onelia Villasis',
             titulo: item.titulo || '',
-            hallazgos: item.hallazgos ? item.hallazgos.map(h => ({ ...h })) : [
-                { hallazgo: '', area: '', responsable: item.responsableDepto || '', realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
-            ]
+            hallazgos: []
         };
+
+        // Cargar los hallazgos del item en la sección correspondiente
+        this.hallazgosPorSeccion[initialSeccion] = item.hallazgos ? item.hallazgos.map(h => ({ ...h })) : [
+            { hallazgo: '', area: '', responsable: item.responsableDepto || this.getDefaultResponsable(initialSeccion), realizado: false, estatus: 'NO_REALIZADO', planAccion: '', evidencia: '' }
+        ];
+
         this.addDrawerVisible = true;
     }
 
@@ -1125,7 +1120,8 @@ export class TareasDistintivoHComponent implements OnInit {
 
         // ── EDIT MODE: update the single record or create if switching section without existing record ──
         if (this.isEditing) {
-            const validHallazgos = this.formObservation.hallazgos.filter(h => h.hallazgo.trim() !== '');
+            const currentSec = this.formObservation.seccion;
+            const validHallazgos = (this.hallazgosPorSeccion[currentSec] || []).filter(h => h.hallazgo && h.hallazgo.trim() !== '');
             if (validHallazgos.length === 0) {
                 this.messageService.add({ severity: 'warn', summary: 'Hallazgo requerido', detail: 'Por favor ingrese al menos un hallazgo.' });
                 return;

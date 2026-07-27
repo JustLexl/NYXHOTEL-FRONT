@@ -1052,7 +1052,34 @@ export class TableReportesGuardia implements OnInit {
             );
         }
 
-        const nombreArchivo = 'reporte-guardia_' + r.nombreEjecutivo.replace(/\s+/g, '_') + '_' + r.fecha + '.pdf';
+        // Formatear fecha a DD-MM-YYYY
+        let fechaStr = '';
+        const fechaRaw = r.createdAt || r.creadoEn || r.fecha;
+        if (fechaRaw) {
+            const d = new Date(fechaRaw);
+            if (!isNaN(d.getTime())) {
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                fechaStr = `${day}-${month}-${year}`;
+            }
+        }
+        if (!fechaStr && r.fecha) {
+            // Respaldar si r.fecha ya venía en algún formato de texto o YYYY-MM-DD
+            const parts = r.fecha.split('T')[0].split('-');
+            if (parts.length === 3) {
+                fechaStr = parts[0].length === 4 ? `${parts[2]}-${parts[1]}-${parts[0]}` : r.fecha;
+            } else {
+                fechaStr = r.fecha;
+            }
+        }
+
+        const ejecutivoSlug = (r.nombreEjecutivo || '')
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '_');
+
+        const nombreArchivo = `${fechaStr} reporte-guardia_${ejecutivoSlug}.pdf`;
         doc.save(nombreArchivo);
     }
 }
