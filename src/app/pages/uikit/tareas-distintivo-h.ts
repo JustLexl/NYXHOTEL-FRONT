@@ -651,9 +651,9 @@ import { AuthService } from '@/app/core/services/auth.service';
 
 <!-- MODAL: VISUALIZAR FORMATO OFICIAL (IGUAL AL SCREENSHOT / IMPRIMIBLE) -->
 <div *ngIf="formatViewVisible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-6xl max-h-[92vh] overflow-y-auto rounded-2xl border border-slate-200 shadow-2xl flex flex-col">
+    <div class="bg-white w-full max-w-6xl max-h-[90vh] rounded-2xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden">
         <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl no-print">
+        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl no-print shrink-0">
             <div class="flex items-center gap-2">
                 <i class="pi pi-file-pdf text-sky-600 text-xl"></i>
                 <span class="font-extrabold text-slate-800 text-base">
@@ -675,7 +675,7 @@ import { AuthService } from '@/app/core/services/auth.service';
         </div>
 
         <!-- Excel / Formato exacto del screenshot -->
-        <div class="p-6 bg-white flex flex-col print-section overflow-x-auto" id="print-area">
+        <div class="p-6 bg-white flex flex-col print-section overflow-y-auto" id="print-area">
             
             <div class="w-full border-2 border-slate-900 font-sans text-xs">
                 <!-- Banner Titulo -->
@@ -799,27 +799,30 @@ import { AuthService } from '@/app/core/services/auth.service';
     styles: [`
         :host { display: block; }
         @media print {
-            body, body * {
+            body * {
                 visibility: hidden !important;
             }
-            .layout-sidebar, .layout-topbar, app-topbar, app-sidebar, p-toast, p-confirmdialog, .no-print {
+            .no-print, p-toast, p-confirmdialog {
                 display: none !important;
             }
             #print-area, #print-area * {
                 visibility: visible !important;
             }
             #print-area {
-                position: fixed !important;
+                position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
-                width: 100vw !important;
-                height: auto !important;
+                width: 100% !important;
+                max-height: none !important;
+                overflow: visible !important;
                 margin: 0 !important;
-                padding: 20px !important;
+                padding: 0 !important;
                 border: none !important;
                 box-shadow: none !important;
                 background: white !important;
-                z-index: 999999 !important;
+            }
+            tr {
+                page-break-inside: avoid !important;
             }
         }
     `]
@@ -1069,7 +1072,49 @@ export class TareasDistintivoHComponent implements OnInit {
     }
 
     printFormat() {
-        window.print();
+        const printContent = document.getElementById('print-area');
+        if (!printContent) {
+            window.print();
+            return;
+        }
+
+        const printWindow = window.open('', '_blank', 'width=1100,height=850');
+        if (!printWindow) {
+            window.print();
+            return;
+        }
+
+        const title = `Tareas Distintivo H - ${this.formatRecord?.seccion || this.activeSeccion} (${this.formatRecord?.fecha || ''})`;
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${title}</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                    @page { size: auto; margin: 10mm; }
+                    body { background: white; font-family: sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+                    tr { page-break-inside: avoid; page-break-after: auto; }
+                    thead { display: table-header-group; }
+                    tfoot { display: table-footer-group; }
+                </style>
+            </head>
+            <body class="p-4">
+                ${printContent.innerHTML}
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() {
+                            window.print();
+                            window.close();
+                        }, 500);
+                    };
+                </script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     }
 
     submitObservation() {
