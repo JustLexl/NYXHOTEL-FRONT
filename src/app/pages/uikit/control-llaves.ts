@@ -330,17 +330,17 @@ interface LlaveItem {
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Fecha <span class="text-[#4a5d3e]">(auto)</span>
+                    Fecha <span class="text-[#4a5d3e]">(automático)</span>
                 </label>
-                <input type="date" [(ngModel)]="formHeader.fecha"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] font-semibold text-slate-700" />
+                <input type="date" [(ngModel)]="formHeader.fecha" readonly tabindex="-1"
+                    class="w-full border border-slate-200 bg-slate-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 cursor-not-allowed select-none" />
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Hora <span class="text-[#4a5d3e]">(auto)</span>
+                    Hora <span class="text-[#4a5d3e]">(automático)</span>
                 </label>
-                <input type="time" [(ngModel)]="formHeader.hora"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] font-semibold text-slate-700" />
+                <input type="time" [(ngModel)]="formHeader.hora" readonly tabindex="-1"
+                    class="w-full border border-slate-200 bg-slate-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 cursor-not-allowed select-none" />
             </div>
         </div>
 
@@ -474,14 +474,18 @@ interface LlaveItem {
 
         <div class="grid grid-cols-2 gap-3">
             <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Fecha Devolución</label>
-                <input type="date" [(ngModel)]="devueltaForm.fecha"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-700" />
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Fecha Devolución
+                </label>
+                <input type="date" [(ngModel)]="devueltaForm.fecha" readonly tabindex="-1"
+                    class="w-full border border-slate-200 bg-slate-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 cursor-not-allowed select-none" />
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Hora Devolución</label>
-                <input type="time" [(ngModel)]="devueltaForm.hora"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-700" />
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Hora Devolución
+                </label>
+                <input type="time" [(ngModel)]="devueltaForm.hora" readonly tabindex="-1"
+                    class="w-full border border-slate-200 bg-slate-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 cursor-not-allowed select-none" />
             </div>
         </div>
 
