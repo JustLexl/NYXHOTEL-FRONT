@@ -110,6 +110,7 @@ import { AuthService } from '@/app/core/services/auth.service';
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                        <th class="py-4 px-6">Folio</th>
                         <th class="py-4 px-6">Fecha Hallazgo</th>
                         <th class="py-4 px-6">Descripción</th>
                         <th class="py-4 px-6">¿Dónde se encontró?</th>
@@ -121,6 +122,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
                     <tr *ngFor="let item of filteredRecords" class="hover:bg-slate-50 transition-colors duration-150">
+                        <td class="py-4 px-6 font-bold text-teal-700 font-mono">{{ item.folio || '—' }}</td>
                         <td class="py-4 px-6 font-semibold">{{ item.fechaEncontrado }} {{ item.horaEncontrado }}</td>
                         <td class="py-4 px-6">
                             <span class="font-bold text-slate-900 block">{{ item.descripcionEncontrado }}</span>
@@ -175,7 +177,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                         </td>
                     </tr>
                     <tr *ngIf="filteredRecords.length === 0">
-                        <td colspan="7" class="py-8 px-6 text-center text-slate-400 font-medium">
+                        <td colspan="8" class="py-8 px-6 text-center text-slate-400 font-medium">
                             No se encontraron objetos registrados.
                         </td>
                     </tr>
@@ -483,7 +485,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                         <span class="font-bold text-slate-800">{{ viewRecord?.departamento }}</span>
                     </div>
                     <div class="border-r border-slate-950 p-2">
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-4 gap-2">
                             <div class="col-span-1">
                                 <span class="font-bold text-slate-500 uppercase block text-[9px]">Se encontró en:</span>
                                 <span class="font-bold text-slate-800">{{ viewRecord?.seEncontroEn }}</span>
@@ -495,6 +497,10 @@ import { AuthService } from '@/app/core/services/auth.service';
                             <div class="col-span-1">
                                 <span class="font-bold text-slate-500 uppercase block text-[9px]">Hora:</span>
                                 <span class="font-bold text-slate-800">{{ viewRecord?.horaEncontrado }}</span>
+                            </div>
+                            <div class="col-span-1">
+                                <span class="font-bold text-slate-500 uppercase block text-[9px]">Folio:</span>
+                                <span class="font-extrabold text-slate-900 font-mono">{{ viewRecord?.folio || '—' }}</span>
                             </div>
                         </div>
                     </div>
@@ -560,7 +566,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                         <span class="font-bold text-slate-800">{{ viewRecord?.habitacionReclama || '—' }}</span>
                     </div>
                     <div class="p-2 col-span-1">
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-3 gap-2">
                             <div>
                                 <span class="font-bold text-slate-500 uppercase block text-[9px]">Fecha / Date:</span>
                                 <span class="font-bold text-slate-800">{{ viewRecord?.fechaReclama || '—' }}</span>
@@ -568,6 +574,10 @@ import { AuthService } from '@/app/core/services/auth.service';
                             <div>
                                 <span class="font-bold text-slate-500 uppercase block text-[9px]">Hora / Time:</span>
                                 <span class="font-bold text-slate-800">{{ viewRecord?.horaReclama || '—' }}</span>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-500 uppercase block text-[9px]">Folio:</span>
+                                <span class="font-extrabold text-slate-900 font-mono">{{ viewRecord?.folio || '—' }}</span>
                             </div>
                         </div>
                     </div>
@@ -784,6 +794,7 @@ export class LostAndFoundComponent implements OnInit {
         this.filteredRecords = this.records.filter(r => {
             // Search text filter
             const matchesText = !query || 
+                (r.folio && r.folio.toLowerCase().includes(query)) ||
                 r.descripcionEncontrado.toLowerCase().includes(query) ||
                 r.seEncontroEn.toLowerCase().includes(query) ||
                 r.nombreEntrega.toLowerCase().includes(query) ||

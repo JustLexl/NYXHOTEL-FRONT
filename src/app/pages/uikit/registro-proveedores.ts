@@ -335,7 +335,17 @@ import { AuthService } from '@/app/core/services/auth.service';
             </label>
             <input type="text" [(ngModel)]="formAdd.destino"
                 placeholder="Ej. Mantenimiento, Cocina, Gerencia..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent mb-2" />
+            <div class="flex flex-wrap gap-1.5">
+                <button *ngFor="let dest of destinoOptions" type="button"
+                    (click)="formAdd.destino = dest"
+                    [class]="formAdd.destino === dest
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300'"
+                    class="border text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-all duration-100 cursor-pointer leading-none">
+                    {{ dest }}
+                </button>
+            </div>
         </div>
 
         <!-- Agente de Seguridad -->
@@ -446,7 +456,17 @@ import { AuthService } from '@/app/core/services/auth.service';
             </label>
             <input type="text" [(ngModel)]="formEdit.destino"
                 placeholder="Ej. Mantenimiento, Cocina, Gerencia..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent mb-2" />
+            <div class="flex flex-wrap gap-1.5">
+                <button *ngFor="let dest of destinoOptions" type="button"
+                    (click)="formEdit.destino = dest"
+                    [class]="formEdit.destino === dest
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300'"
+                    class="border text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-all duration-100 cursor-pointer leading-none">
+                    {{ dest }}
+                </button>
+            </div>
         </div>
 
         <!-- Agente de Seguridad -->
@@ -575,6 +595,17 @@ export class RegistroProveedoresComponent implements OnInit {
     currentDate = '';
 
     loggedUserPlaceholder = '';
+
+    destinoOptions = [
+        'Seguridad',
+        'Almacén',
+        'Mantenimiento',
+        'Sistemas',
+        'Ama de Llaves',
+        'AyB',
+        'Recursos Humanos',
+        'Cocina'
+    ];
 
     formAdd = {
         fechaEntrada: '',

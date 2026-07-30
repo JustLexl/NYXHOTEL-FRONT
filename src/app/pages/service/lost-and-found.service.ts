@@ -27,6 +27,7 @@ export interface LostAndFoundRecord {
     descripcionReclama?: string;
     firmaReclama?: string;
     fotos?: string[];
+    folio?: string;
     createdAt?: string;
     updatedAt?: string;
 }

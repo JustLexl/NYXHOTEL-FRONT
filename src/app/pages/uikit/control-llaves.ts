@@ -27,6 +27,12 @@ type TipoLlave = 'MAGNETICA' | 'METALICA';
 type TipoRegistro = 'ENTREGADA' | 'DEVUELTA';
 type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
 
+interface LlaveItem {
+    tipoLlave: TipoLlave;
+    numeroLlave: string;
+    numeroPiezas: number;
+}
+
 @Component({
     selector: 'app-control-llaves',
     standalone: true,
@@ -56,12 +62,11 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
                 Registro y control de entrega y devolución de llaves del hotel.
             </p>
         </div>
-        <!-- Solo abre drawer de ENTREGADAS -->
         <button
             (click)="openEntregadaDrawer()"
             class="bg-[#4a5d3e] text-white hover:bg-[#5c734e] px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:shadow-md transition-all duration-150 flex items-center gap-2 transform active:scale-95 cursor-pointer">
             <i class="pi pi-plus"></i>
-            Registrar Llave Entregada
+            Registrar Llaves Entregadas
         </button>
     </div>
 
@@ -87,7 +92,6 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
 
     <!-- Filters Panel -->
     <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
-        <!-- Month Filter Row -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center gap-2 text-slate-800 font-semibold text-sm">
                 <i class="pi pi-calendar text-[#4a5d3e]"></i>
@@ -109,63 +113,44 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
             </div>
         </div>
 
-        <!-- Tipo Llave Filter Row -->
         <div class="border-t border-slate-100 pt-3 flex flex-col sm:flex-row sm:items-center gap-3">
             <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm shrink-0">
                 <i class="pi pi-filter text-[#4a5d3e]"></i>
                 Tipo de llave:
             </div>
             <div class="flex gap-2 flex-wrap">
-                <button
-                    type="button"
-                    (click)="tipoLlaveFilter = 'TODAS'; applyFilter()"
-                    [class]="tipoLlaveFilter === 'TODAS'
-                        ? 'bg-slate-700 text-white border-slate-700 shadow'
-                        : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'"
+                <button type="button" (click)="tipoLlaveFilter = 'TODAS'; applyFilter()"
+                    [class]="tipoLlaveFilter === 'TODAS' ? 'bg-slate-700 text-white border-slate-700 shadow' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'"
                     class="border-2 rounded-xl px-4 py-1.5 text-xs font-bold transition-all duration-150 cursor-pointer flex items-center gap-1.5">
-                    <i class="pi pi-list"></i>
-                    Todas las llaves
+                    <i class="pi pi-list"></i> Todas las llaves
                 </button>
-                <button
-                    type="button"
-                    (click)="tipoLlaveFilter = 'MAGNETICA'; applyFilter()"
-                    [class]="tipoLlaveFilter === 'MAGNETICA'
-                        ? 'bg-violet-600 text-white border-violet-600 shadow'
-                        : 'bg-white text-violet-700 border-violet-300 hover:bg-violet-50'"
+                <button type="button" (click)="tipoLlaveFilter = 'MAGNETICA'; applyFilter()"
+                    [class]="tipoLlaveFilter === 'MAGNETICA' ? 'bg-violet-600 text-white border-violet-600 shadow' : 'bg-white text-violet-700 border-violet-300 hover:bg-violet-50'"
                     class="border-2 rounded-xl px-4 py-1.5 text-xs font-bold transition-all duration-150 cursor-pointer flex items-center gap-1.5">
-                    <i class="pi pi-wifi"></i>
-                    Magnética
+                    <i class="pi pi-wifi"></i> Magnética
                 </button>
-                <button
-                    type="button"
-                    (click)="tipoLlaveFilter = 'METALICA'; applyFilter()"
-                    [class]="tipoLlaveFilter === 'METALICA'
-                        ? 'bg-orange-500 text-white border-orange-500 shadow'
-                        : 'bg-white text-orange-600 border-orange-300 hover:bg-orange-50'"
+                <button type="button" (click)="tipoLlaveFilter = 'METALICA'; applyFilter()"
+                    [class]="tipoLlaveFilter === 'METALICA' ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-white text-orange-600 border-orange-300 hover:bg-orange-50'"
                     class="border-2 rounded-xl px-4 py-1.5 text-xs font-bold transition-all duration-150 cursor-pointer flex items-center gap-1.5">
-                    <i class="pi pi-wrench"></i>
-                    Metálica
+                    <i class="pi pi-wrench"></i> Metálica
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Two Tables Side by Side with Aligned Rows (Horizontal en teléfonos y tablets) -->
+    <!-- Two Tables -->
     <div class="w-full overflow-x-auto pb-2">
         <div class="grid grid-cols-2 gap-4 min-w-[750px] lg:min-w-0">
 
         <!-- LEFT TABLE: Entregadas -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="flex justify-between items-center px-5 py-4 border-b border-slate-100 bg-amber-50">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-400 text-white">
-                        <i class="pi pi-arrow-right text-xs"></i>
-                    </span>
-                    <span class="font-extrabold text-amber-800 text-base tracking-tight">Llaves Entregadas</span>
-                    <span class="ml-2 bg-amber-400 text-white text-xs font-black px-2.5 py-0.5 rounded-full">{{ filteredEntregadas.length }}</span>
-                </div>
+            <div class="flex items-center px-5 py-4 border-b border-slate-100 bg-amber-50">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-400 text-white mr-2">
+                    <i class="pi pi-arrow-right text-xs"></i>
+                </span>
+                <span class="font-extrabold text-amber-800 text-base tracking-tight">Llaves Entregadas</span>
+                <span class="ml-2 bg-amber-400 text-white text-xs font-black px-2.5 py-0.5 rounded-full">{{ filteredEntregadas.length }}</span>
             </div>
-
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs table-fixed">
                     <thead>
@@ -188,45 +173,37 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
                                 Sin registros de entrega
                             </td>
                         </tr>
-                        <tr
-                            *ngFor="let rec of filteredEntregadas"
-                            class="hover:bg-amber-50/50 transition-colors duration-100 min-h-[44px] group">
-                            <td class="py-3 px-2 text-center font-mono font-semibold text-slate-700 truncate">{{ rec.hora }}</td>
-                            <td class="py-3 px-2 text-center font-semibold text-slate-600 truncate">{{ formatFecha(rec.fecha) }}</td>
-                            <td class="py-3 px-3 font-bold text-slate-800 truncate" [title]="rec.colaborador">{{ rec.colaborador }}</td>
-                            <td class="py-3 px-3 text-slate-600 truncate" [title]="rec.departamento">{{ rec.departamento }}</td>
-                            <td class="py-3 px-3 text-slate-600 truncate" [title]="rec.puesto">{{ rec.puesto }}</td>
-                            <td class="py-3 px-2 text-center">
+                        <tr *ngFor="let rec of filteredEntregadas"
+                            class="hover:bg-amber-50/50 transition-colors duration-100 h-[52px] group">
+                            <td class="py-2 px-2 text-center font-mono font-semibold text-slate-700 truncate">{{ rec.hora }}</td>
+                            <td class="py-2 px-2 text-center font-semibold text-slate-600 truncate">{{ formatFecha(rec.fecha) }}</td>
+                            <td class="py-2 px-3 font-bold text-slate-800 truncate" [title]="rec.colaborador">{{ rec.colaborador }}</td>
+                            <td class="py-2 px-3 text-slate-600 truncate" [title]="rec.departamento">{{ rec.departamento }}</td>
+                            <td class="py-2 px-3 text-slate-600 truncate" [title]="rec.puesto">{{ rec.puesto }}</td>
+                            <td class="py-2 px-2 text-center">
                                 <span class="inline-block bg-amber-100 text-amber-800 font-black px-1.5 py-0.5 rounded-md border border-amber-200 truncate">{{ rec.numeroLlave }}</span>
                             </td>
-                            <td class="py-3 px-2 text-center font-bold text-slate-700 truncate">{{ rec.numeroPiezas }}</td>
-                            <td class="py-3 px-2 text-center">
-                                <span
-                                    [class]="rec.tipoLlave === 'MAGNETICA'
-                                        ? 'bg-violet-100 text-violet-700 border-violet-200'
-                                        : 'bg-orange-100 text-orange-700 border-orange-200'"
+                            <td class="py-2 px-2 text-center font-bold text-slate-700">{{ rec.numeroPiezas }}</td>
+                            <td class="py-2 px-2 text-center">
+                                <span [class]="rec.tipoLlave === 'MAGNETICA' ? 'bg-violet-100 text-violet-700 border-violet-200' : 'bg-orange-100 text-orange-700 border-orange-200'"
                                     class="inline-block font-bold px-1 py-0.5 rounded border text-[9px] uppercase tracking-wide">
                                     {{ rec.tipoLlave === 'MAGNETICA' ? 'Mag.' : 'Met.' }}
                                 </span>
                             </td>
-                            <td class="py-3 px-2 text-center">
+                            <td class="py-2 px-2 text-center">
                                 <div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <!-- Marcar como devuelta si no ha sido devuelta -->
-                                    <button
-                                        *ngIf="!getPairedDevuelta(rec.id)"
+                                    <button *ngIf="!getPairedDevuelta(rec.id)"
                                         (click)="openDevueltaFromEntregada(rec)"
                                         class="text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 transition-all p-1.5 rounded-lg"
                                         title="Registrar devolución">
-                                        <i class="pi pi-arrow-left text-xs font-bold"></i>
+                                        <i class="pi pi-arrow-left text-xs"></i>
                                     </button>
-                                    <button
-                                        (click)="openEditDrawer(rec)"
+                                    <button (click)="openEditEntregada(rec)"
                                         class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-all p-1.5 rounded-lg"
                                         title="Editar">
                                         <i class="pi pi-pencil text-xs"></i>
                                     </button>
-                                    <button
-                                        (click)="confirmDelete(rec.id)"
+                                    <button (click)="confirmDelete(rec.id)"
                                         class="text-red-600 hover:text-red-800 hover:bg-red-50 transition-all p-1.5 rounded-lg"
                                         title="Eliminar">
                                         <i class="pi pi-trash text-xs"></i>
@@ -239,18 +216,15 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
             </div>
         </div>
 
-        <!-- RIGHT TABLE: Devueltas (ALINEADO FILA POR FILA CON ENTREGADAS) -->
+        <!-- RIGHT TABLE: Devueltas -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="flex justify-between items-center px-5 py-4 border-b border-slate-100 bg-emerald-50">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500 text-white">
-                        <i class="pi pi-arrow-left text-xs"></i>
-                    </span>
-                    <span class="font-extrabold text-emerald-800 text-base tracking-tight">Llaves Devueltas</span>
-                    <span class="ml-2 bg-emerald-500 text-white text-xs font-black px-2.5 py-0.5 rounded-full">{{ devueltasRecords.length }}</span>
-                </div>
+            <div class="flex items-center px-5 py-4 border-b border-slate-100 bg-emerald-50">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500 text-white mr-2">
+                    <i class="pi pi-arrow-left text-xs"></i>
+                </span>
+                <span class="font-extrabold text-emerald-800 text-base tracking-tight">Llaves Devueltas</span>
+                <span class="ml-2 bg-emerald-500 text-white text-xs font-black px-2.5 py-0.5 rounded-full">{{ devueltasRecords.length }}</span>
             </div>
-
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs table-fixed">
                     <thead>
@@ -273,42 +247,32 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
                                 Sin registros de devolución
                             </td>
                         </tr>
-                        <tr
-                            *ngFor="let entregada of filteredEntregadas"
-                            class="hover:bg-emerald-50/30 transition-colors duration-100 min-h-[44px] group">
-                            
-                            <!-- Check paired record -->
+                        <tr *ngFor="let entregada of filteredEntregadas"
+                            class="hover:bg-emerald-50/30 transition-colors duration-100 h-[52px] group">
                             <ng-container *ngIf="getPairedDevuelta(entregada.id) as dev; else pendienteBlock">
-                                <td class="py-3 px-2 text-center font-mono font-semibold text-slate-700 truncate">{{ dev.hora }}</td>
-                                <td class="py-3 px-2 text-center font-semibold text-slate-600 truncate">{{ formatFecha(dev.fecha) }}</td>
-                                <td class="py-3 px-3 font-bold text-slate-800 truncate" [title]="dev.colaborador">{{ dev.colaborador }}</td>
-                                <td class="py-3 px-3 text-slate-600 truncate" [title]="dev.departamento">{{ dev.departamento }}</td>
-                                <td class="py-3 px-3 text-slate-600 truncate" [title]="dev.puesto">{{ dev.puesto }}</td>
-                                <td class="py-3 px-2 text-center">
+                                <td class="py-2 px-2 text-center font-mono font-semibold text-slate-700 truncate">{{ dev.hora }}</td>
+                                <td class="py-2 px-2 text-center font-semibold text-slate-600 truncate">{{ formatFecha(dev.fecha) }}</td>
+                                <td class="py-2 px-3 font-bold text-slate-800 truncate" [title]="dev.colaborador">{{ dev.colaborador }}</td>
+                                <td class="py-2 px-3 text-slate-600 truncate" [title]="dev.departamento">{{ dev.departamento }}</td>
+                                <td class="py-2 px-3 text-slate-600 truncate" [title]="dev.puesto">{{ dev.puesto }}</td>
+                                <td class="py-2 px-2 text-center">
                                     <span class="inline-block bg-emerald-100 text-emerald-800 font-black px-1.5 py-0.5 rounded-md border border-emerald-200 truncate">{{ dev.numeroLlave }}</span>
                                 </td>
-                                <td class="py-3 px-2 text-center font-bold text-slate-700 truncate">{{ dev.numeroPiezas }}</td>
-                                <td class="py-3 px-2 text-center">
-                                    <span
-                                        [class]="dev.tipoLlave === 'MAGNETICA'
-                                            ? 'bg-violet-100 text-violet-700 border-violet-200'
-                                            : 'bg-orange-100 text-orange-700 border-orange-200'"
+                                <td class="py-2 px-2 text-center font-bold text-slate-700">{{ dev.numeroPiezas }}</td>
+                                <td class="py-2 px-2 text-center">
+                                    <span [class]="dev.tipoLlave === 'MAGNETICA' ? 'bg-violet-100 text-violet-700 border-violet-200' : 'bg-orange-100 text-orange-700 border-orange-200'"
                                         class="inline-block font-bold px-1 py-0.5 rounded border text-[9px] uppercase tracking-wide">
                                         {{ dev.tipoLlave === 'MAGNETICA' ? 'Mag.' : 'Met.' }}
                                     </span>
                                 </td>
-                                <td class="py-3 px-2 text-center">
+                                <td class="py-2 px-2 text-center">
                                     <div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            (click)="openEditDrawer(dev)"
-                                            class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-all p-1.5 rounded-lg"
-                                            title="Editar">
+                                        <button (click)="openEditDevuelta(dev)"
+                                            class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-all p-1.5 rounded-lg" title="Editar">
                                             <i class="pi pi-pencil text-xs"></i>
                                         </button>
-                                        <button
-                                            (click)="confirmDelete(dev.id)"
-                                            class="text-red-600 hover:text-red-800 hover:bg-red-50 transition-all p-1.5 rounded-lg"
-                                            title="Eliminar">
+                                        <button (click)="confirmDelete(dev.id)"
+                                            class="text-red-600 hover:text-red-800 hover:bg-red-50 transition-all p-1.5 rounded-lg" title="Eliminar">
                                             <i class="pi pi-trash text-xs"></i>
                                         </button>
                                     </div>
@@ -316,29 +280,25 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
                             </ng-container>
 
                             <ng-template #pendienteBlock>
-                                <td class="py-3 px-2 text-center text-slate-400 font-semibold">-</td>
-                                <td class="py-3 px-2 text-center text-slate-400 font-semibold">-</td>
-                                <td class="py-3 px-3">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-amber-50 text-amber-700 border border-amber-200 animate-pulse uppercase">
+                                <td class="py-2 px-2 text-center text-slate-400 font-semibold">-</td>
+                                <td class="py-2 px-2 text-center text-slate-400 font-semibold">-</td>
+                                <td class="py-2 px-3">
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-amber-50 text-amber-700 border border-amber-200 animate-pulse uppercase">
                                         Pendiente
                                     </span>
                                 </td>
-                                <td class="py-3 px-3 text-slate-400 font-semibold">-</td>
-                                <td class="py-3 px-3 text-slate-400 font-semibold">-</td>
-                                <td class="py-3 px-2 text-center text-slate-400 font-semibold">-</td>
-                                <td class="py-3 px-2 text-center text-slate-400 font-semibold">-</td>
-                                <td class="py-3 px-2 text-center text-slate-400 font-semibold">-</td>
-                                <td class="py-3 px-2 text-center">
-                                    <!-- Botón rápido de devolución -->
-                                    <button
-                                        (click)="openDevueltaFromEntregada(entregada)"
-                                        class="text-emerald-600 hover:text-white hover:bg-emerald-500 border border-emerald-300 transition-all px-2.5 py-1 rounded-lg font-bold text-[10px]"
-                                        title="Registrar devolución de esta llave">
+                                <td class="py-2 px-3 text-slate-400 font-semibold">-</td>
+                                <td class="py-2 px-3 text-slate-400 font-semibold">-</td>
+                                <td class="py-2 px-2 text-center text-slate-400 font-semibold">-</td>
+                                <td class="py-2 px-2 text-center text-slate-400 font-semibold">-</td>
+                                <td class="py-2 px-2 text-center text-slate-400 font-semibold">-</td>
+                                <td class="py-2 px-2 text-center">
+                                    <button (click)="openDevueltaFromEntregada(entregada)"
+                                        class="text-emerald-600 hover:text-white hover:bg-emerald-500 border border-emerald-300 transition-all px-2.5 py-1 rounded-lg font-bold text-[10px]">
                                         Devolver
                                     </button>
                                 </td>
                             </ng-template>
-
                         </tr>
                     </tbody>
                 </table>
@@ -348,14 +308,8 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
     </div>
 </div>
 
-<!-- ===== DRAWER ENTREGADAS ===== -->
-<p-drawer
-    [(visible)]="drawerEntregadaVisible"
-    position="right"
-    [style]="{ width: '430px' }"
-    [modal]="true"
-    [closeOnEscape]="true">
-
+<!-- ===== DRAWER: Registrar / Editar Entrega ===== -->
+<p-drawer [(visible)]="drawerEntregadaVisible" position="right" [style]="{ width: '480px' }" [modal]="true" [closeOnEscape]="true">
     <ng-template #header>
         <div class="flex items-center gap-3">
             <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-amber-500 text-white shadow">
@@ -363,7 +317,7 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
             </span>
             <div>
                 <div class="font-extrabold text-slate-800 text-base leading-tight">
-                    {{ drawerMode === 'add' ? 'Nueva Llave Entregada' : 'Editar Llave Entregada' }}
+                    {{ drawerMode === 'add' ? 'Nueva Entrega de Llaves' : 'Editar Llave Entregada' }}
                 </div>
                 <div class="text-xs text-slate-500 font-medium">Control de Llaves</div>
             </div>
@@ -372,73 +326,42 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
 
     <div class="flex flex-col gap-5 p-1">
 
-        <!-- Tipo de Llave (Magnética / Metálica) -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tipo de Llave</label>
-            <div class="grid grid-cols-2 gap-2">
-                <button
-                    type="button"
-                    (click)="form.tipoLlave = 'MAGNETICA'"
-                    [class]="form.tipoLlave === 'MAGNETICA'
-                        ? 'bg-violet-600 text-white border-violet-600 shadow-md'
-                        : 'bg-white text-violet-700 border-violet-300 hover:bg-violet-50'"
-                    class="flex items-center justify-center gap-2 border-2 rounded-xl py-3 text-sm font-bold transition-all duration-150 cursor-pointer">
-                    <i class="pi pi-wifi"></i>
-                    Magnética
-                </button>
-                <button
-                    type="button"
-                    (click)="form.tipoLlave = 'METALICA'"
-                    [class]="form.tipoLlave === 'METALICA'
-                        ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                        : 'bg-white text-orange-600 border-orange-300 hover:bg-orange-50'"
-                    class="flex items-center justify-center gap-2 border-2 rounded-xl py-3 text-sm font-bold transition-all duration-150 cursor-pointer">
-                    <i class="pi pi-wrench"></i>
-                    Metálica
-                </button>
-            </div>
-        </div>
-
-        <div class="border-t border-slate-200"></div>
-
         <!-- Fecha y Hora -->
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Fecha <span class="text-[#4a5d3e]">(auto)</span>
                 </label>
-                <input type="date" [(ngModel)]="form.fecha"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] focus:border-transparent font-semibold text-slate-700" />
+                <input type="date" [(ngModel)]="formHeader.fecha"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] font-semibold text-slate-700" />
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Hora <span class="text-[#4a5d3e]">(auto)</span>
                 </label>
-                <input type="time" [(ngModel)]="form.hora"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] focus:border-transparent font-semibold text-slate-700" />
+                <input type="time" [(ngModel)]="formHeader.hora"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] font-semibold text-slate-700" />
             </div>
         </div>
 
         <!-- Colaborador -->
         <div>
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Colaborador</label>
-            <input type="text" [(ngModel)]="form.colaborador"
+            <input type="text" [(ngModel)]="formHeader.colaborador"
                 placeholder="Ej. Juan García López"
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] focus:border-transparent" />
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e]" />
         </div>
 
-        <!-- Departamento + Quick-Select -->
+        <!-- Departamento -->
         <div>
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Departamento</label>
-            <input type="text" [(ngModel)]="form.departamento"
-                placeholder="Escribe o selecciona un departamento..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] focus:border-transparent mb-2" />
+            <input type="text" [(ngModel)]="formHeader.departamento"
+                placeholder="Escribe o selecciona..."
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] mb-2" />
             <div class="flex flex-wrap gap-1.5">
-                <button
-                    *ngFor="let dept of departmentOptions"
-                    type="button"
-                    (click)="form.departamento = dept"
-                    [class]="form.departamento === dept
+                <button *ngFor="let dept of departmentOptions" type="button"
+                    (click)="formHeader.departamento = dept"
+                    [class]="formHeader.departamento === dept
                         ? 'bg-[#4a5d3e] text-white border-[#4a5d3e]'
                         : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-[#4a5d3e] hover:text-white hover:border-[#4a5d3e]'"
                     class="border text-[10px] font-bold px-2 py-1 rounded-lg transition-all duration-100 cursor-pointer leading-none">
@@ -450,24 +373,62 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
         <!-- Puesto -->
         <div>
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Puesto</label>
-            <input type="text" [(ngModel)]="form.puesto"
+            <input type="text" [(ngModel)]="formHeader.puesto"
                 placeholder="Ej. Recepcionista, Camarero..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] focus:border-transparent" />
+                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e]" />
         </div>
 
-        <!-- No. Llave -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Número de Llave</label>
-            <input type="text" [(ngModel)]="form.numeroLlave"
-                placeholder="Ej. 101, Master-A, Bodega-2..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] focus:border-transparent font-mono font-bold" />
+        <div class="border-t border-slate-200"></div>
+
+        <!-- Llaves -->
+        <div class="flex justify-between items-center">
+            <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                Llaves a entregar ({{ llavesList.length }})
+            </label>
+            <button *ngIf="drawerMode === 'add'" type="button" (click)="addLlaveItem()"
+                class="text-xs font-bold text-[#4a5d3e] hover:text-[#5c734e] flex items-center gap-1 cursor-pointer">
+                <i class="pi pi-plus-circle"></i>
+                Añadir otra llave
+            </button>
         </div>
 
-        <!-- No. Piezas -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Número de Piezas</label>
-            <input type="number" [(ngModel)]="form.numeroPiezas" min="1" placeholder="1"
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a5d3e] focus:border-transparent font-bold text-slate-700" />
+        <div class="flex flex-col gap-3">
+            <div *ngFor="let item of llavesList; let idx = index"
+                class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2 relative">
+
+                <button *ngIf="llavesList.length > 1 && drawerMode === 'add'" type="button"
+                    (click)="removeLlaveItem(idx)"
+                    class="absolute top-2 right-2 text-slate-400 hover:text-red-500 p-1"
+                    title="Quitar esta llave">
+                    <i class="pi pi-times text-xs"></i>
+                </button>
+
+                <div class="flex gap-3">
+                    <button type="button" (click)="item.tipoLlave = 'MAGNETICA'"
+                        [class]="item.tipoLlave === 'MAGNETICA' ? 'bg-violet-600 text-white shadow-md scale-[1.02]' : 'bg-white text-violet-700 border-violet-200 hover:bg-violet-50'"
+                        class="flex-1 py-3 px-4 border-2 rounded-xl text-sm font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-all duration-150">
+                        <i class="pi pi-wifi text-base"></i> Magnética
+                    </button>
+                    <button type="button" (click)="item.tipoLlave = 'METALICA'"
+                        [class]="item.tipoLlave === 'METALICA' ? 'bg-orange-500 text-white shadow-md scale-[1.02]' : 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50'"
+                        class="flex-1 py-3 px-4 border-2 rounded-xl text-sm font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-all duration-150">
+                        <i class="pi pi-wrench text-base"></i> Metálica
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2">
+                        <input type="text" [(ngModel)]="item.numeroLlave"
+                            placeholder="No. Llave (Ej: 101)"
+                            class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#4a5d3e]" />
+                    </div>
+                    <div>
+                        <input type="number" [(ngModel)]="item.numeroPiezas" min="1"
+                            placeholder="Piezas"
+                            class="w-full border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#4a5d3e]" />
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -477,25 +438,19 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
                 class="flex-1 bg-slate-100 text-slate-700 hover:bg-slate-200 py-3 rounded-xl text-sm font-bold transition-all duration-150 cursor-pointer">
                 Cancelar
             </button>
-            <button type="button" (click)="saveRecord('ENTREGADA')"
-                [disabled]="!isFormValid()"
-                [class]="isFormValid() ? 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer' : 'bg-slate-300 text-slate-400 cursor-not-allowed'"
+            <button type="button" (click)="saveEntregas()"
+                [disabled]="!isEntregadaFormValid()"
+                [class]="isEntregadaFormValid() ? 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer' : 'bg-slate-300 text-slate-400 cursor-not-allowed'"
                 class="flex-1 py-3 rounded-xl text-sm font-bold shadow transition-all duration-150 flex items-center justify-center gap-2">
                 <i class="pi pi-save"></i>
-                {{ drawerMode === 'add' ? 'Guardar Registro' : 'Actualizar' }}
+                {{ drawerMode === 'add' ? 'Guardar Registro(s)' : 'Actualizar' }}
             </button>
         </div>
     </ng-template>
 </p-drawer>
 
-<!-- ===== DRAWER DEVUELTAS ===== -->
-<p-drawer
-    [(visible)]="drawerDevueltaVisible"
-    position="right"
-    [style]="{ width: '430px' }"
-    [modal]="true"
-    [closeOnEscape]="true">
-
+<!-- ===== DRAWER: Registrar Devolución ===== -->
+<p-drawer [(visible)]="drawerDevueltaVisible" position="right" [style]="{ width: '450px' }" [modal]="true" [closeOnEscape]="true">
     <ng-template #header>
         <div class="flex items-center gap-3">
             <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500 text-white shadow">
@@ -510,98 +465,77 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
         </div>
     </ng-template>
 
-    <div class="flex flex-col gap-5 p-1">
+    <div class="flex flex-col gap-5 p-1" *ngIf="devueltaTarget">
 
-        <!-- Tipo de Llave -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tipo de Llave</label>
-            <div class="grid grid-cols-2 gap-2">
-                <button type="button" (click)="form.tipoLlave = 'MAGNETICA'"
-                    [class]="form.tipoLlave === 'MAGNETICA'
-                        ? 'bg-violet-600 text-white border-violet-600 shadow-md'
-                        : 'bg-white text-violet-700 border-violet-300 hover:bg-violet-50'"
-                    class="flex items-center justify-center gap-2 border-2 rounded-xl py-3 text-sm font-bold transition-all duration-150 cursor-pointer">
-                    <i class="pi pi-wifi"></i>
-                    Magnética
-                </button>
-                <button type="button" (click)="form.tipoLlave = 'METALICA'"
-                    [class]="form.tipoLlave === 'METALICA'
-                        ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                        : 'bg-white text-orange-600 border-orange-300 hover:bg-orange-50'"
-                    class="flex items-center justify-center gap-2 border-2 rounded-xl py-3 text-sm font-bold transition-all duration-150 cursor-pointer">
-                    <i class="pi pi-wrench"></i>
-                    Metálica
-                </button>
+        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+            <div class="font-bold text-sm text-amber-900">{{ devueltaTarget.colaborador }}</div>
+            <div class="text-xs text-amber-700 font-medium">{{ devueltaTarget.departamento }} - {{ devueltaTarget.puesto }}</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Fecha Devolución</label>
+                <input type="date" [(ngModel)]="devueltaForm.fecha"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-700" />
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Hora Devolución</label>
+                <input type="time" [(ngModel)]="devueltaForm.hora"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-700" />
             </div>
         </div>
 
         <div class="border-t border-slate-200"></div>
 
-        <!-- Fecha y Hora -->
-        <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Fecha <span class="text-emerald-600">(auto)</span>
+        <!-- Modo añadir: selección de llaves -->
+        <div *ngIf="drawerMode === 'add'">
+            <div class="flex justify-between items-center mb-3">
+                <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                    Seleccionar llaves a devolver:
                 </label>
-                <input type="date" [(ngModel)]="form.fecha"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-semibold text-slate-700" />
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Hora <span class="text-emerald-600">(auto)</span>
-                </label>
-                <input type="time" [(ngModel)]="form.hora"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-semibold text-slate-700" />
-            </div>
-        </div>
-
-        <!-- Colaborador -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Colaborador que Entrega</label>
-            <input type="text" [(ngModel)]="form.colaborador"
-                placeholder="Ej. Juan García López"
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
-        </div>
-
-        <!-- Departamento + Quick-Select -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Departamento</label>
-            <input type="text" [(ngModel)]="form.departamento"
-                placeholder="Escribe o selecciona un departamento..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent mb-2" />
-            <div class="flex flex-wrap gap-1.5">
-                <button size="small" *ngFor="let dept of departmentOptions" type="button"
-                    (click)="form.departamento = dept"
-                    [class]="form.departamento === dept
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600'"
-                    class="border text-[10px] font-bold px-2 py-1 rounded-lg transition-all duration-100 cursor-pointer leading-none">
-                    {{ dept }}
+                <button type="button" (click)="toggleSelectAllDevueltas()"
+                    class="text-xs font-bold text-emerald-600 hover:text-emerald-800 cursor-pointer">
+                    {{ isAllDevueltasSelected() ? 'Desmarcar todas' : 'Marcar todas' }}
                 </button>
             </div>
+
+            <div class="flex flex-col gap-2">
+                <div *ngFor="let item of pendingLlavesList"
+                    (click)="item.selected = !item.selected"
+                    [class]="item.selected ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200 opacity-60'"
+                    class="p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" [checked]="item.selected"
+                            (click)="$event.stopPropagation()"
+                            (change)="item.selected = !item.selected"
+                            class="w-4 h-4 cursor-pointer rounded text-emerald-600" />
+                        <div>
+                            <div class="font-mono font-bold text-slate-800 text-sm">Llave: {{ item.numeroLlave }}</div>
+                            <div class="text-[11px] text-slate-500 font-medium">
+                                {{ item.tipoLlave }} · {{ item.numeroPiezas }} {{ item.numeroPiezas === 1 ? 'pieza' : 'piezas' }}
+                            </div>
+                        </div>
+                    </div>
+                    <span [class]="item.selected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'"
+                        class="px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                        {{ item.selected ? 'Devolver' : 'Pendiente' }}
+                    </span>
+                </div>
+            </div>
         </div>
 
-        <!-- Puesto -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Puesto</label>
-            <input type="text" [(ngModel)]="form.puesto"
-                placeholder="Ej. Recepcionista, Camarero..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
-        </div>
-
-        <!-- No. Llave -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Número de Llave</label>
-            <input type="text" [(ngModel)]="form.numeroLlave"
-                placeholder="Ej. 101, Master-A, Bodega-2..."
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono font-bold" />
-        </div>
-
-        <!-- No. Piezas -->
-        <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Número de Piezas</label>
-            <input type="number" [(ngModel)]="form.numeroPiezas" min="1" placeholder="1"
-                class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-bold text-slate-700" />
+        <!-- Modo editar -->
+        <div *ngIf="drawerMode === 'edit'" class="flex flex-col gap-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">No. Llave</label>
+                <input type="text" [(ngModel)]="devueltaForm.numeroLlave"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Piezas</label>
+                <input type="number" [(ngModel)]="devueltaForm.numeroPiezas" min="1"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
         </div>
     </div>
 
@@ -611,12 +545,12 @@ type FilterTipoLlave = 'TODAS' | 'MAGNETICA' | 'METALICA';
                 class="flex-1 bg-slate-100 text-slate-700 hover:bg-slate-200 py-3 rounded-xl text-sm font-bold transition-all duration-150 cursor-pointer">
                 Cancelar
             </button>
-            <button type="button" (click)="saveRecord('DEVUELTA')"
-                [disabled]="!isFormValid()"
-                [class]="isFormValid() ? 'bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer' : 'bg-slate-300 text-slate-400 cursor-not-allowed'"
+            <button type="button" (click)="saveDevoluciones()"
+                [disabled]="!hasSelectedDevueltas()"
+                [class]="hasSelectedDevueltas() ? 'bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer' : 'bg-slate-300 text-slate-400 cursor-not-allowed'"
                 class="flex-1 py-3 rounded-xl text-sm font-bold shadow transition-all duration-150 flex items-center justify-center gap-2">
                 <i class="pi pi-save"></i>
-                {{ drawerMode === 'add' ? 'Guardar Devolución' : 'Actualizar' }}
+                {{ drawerMode === 'add' ? 'Confirmar Devolución' : 'Actualizar' }}
             </button>
         </div>
     </ng-template>
@@ -630,29 +564,24 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
     filteredEntregadas: ControlLlavesRecord[] = [];
     filteredDevueltas: ControlLlavesRecord[] = [];
 
-    selectedMonth: string = '';
+    selectedMonth = '';
     tipoLlaveFilter: FilterTipoLlave = 'TODAS';
 
     drawerEntregadaVisible = false;
     drawerDevueltaVisible = false;
-
     drawerMode: 'add' | 'edit' = 'add';
     editingId: string | null = null;
 
     departmentOptions = DEPARTMENTS;
 
-    form: {
-        tipo: TipoRegistro;
-        tipoLlave: TipoLlave;
-        entregadaId?: string;
-        fecha: string;
-        hora: string;
-        colaborador: string;
-        departamento: string;
-        puesto: string;
-        numeroLlave: string;
-        numeroPiezas: number;
-    } = this.emptyForm('ENTREGADA');
+    // Drawer entrega
+    formHeader = { fecha: '', hora: '', colaborador: '', departamento: '', puesto: '' };
+    llavesList: LlaveItem[] = [];
+
+    // Drawer devolución
+    devueltaTarget: ControlLlavesRecord | null = null;
+    pendingLlavesList: (ControlLlavesRecord & { selected: boolean })[] = [];
+    devueltaForm = { fecha: '', hora: '', numeroLlave: '', numeroPiezas: 1 };
 
     private sub?: Subscription;
 
@@ -671,128 +600,160 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnDestroy() {
-        this.sub?.unsubscribe();
-    }
+    ngOnDestroy() { this.sub?.unsubscribe(); }
 
-    private emptyForm(tipo: TipoRegistro, entregadaId?: string) {
-        const now = new Date();
-        const pad = (n: number) => n.toString().padStart(2, '0');
+    private now() {
+        const d = new Date();
+        const p = (n: number) => n.toString().padStart(2, '0');
         return {
-            tipo,
-            tipoLlave: 'MAGNETICA' as TipoLlave,
-            entregadaId,
-            fecha: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
-            hora: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-            colaborador: '',
-            departamento: '',
-            puesto: '',
-            numeroLlave: '',
-            numeroPiezas: 1
+            fecha: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,
+            hora: `${p(d.getHours())}:${p(d.getMinutes())}`
         };
     }
+
+    // ---- Drawer Entrega ----
 
     openEntregadaDrawer() {
         this.drawerMode = 'add';
         this.editingId = null;
-        this.form = this.emptyForm('ENTREGADA');
+        const t = this.now();
+        this.formHeader = { fecha: t.fecha, hora: t.hora, colaborador: '', departamento: '', puesto: '' };
+        this.llavesList = [{ tipoLlave: 'MAGNETICA', numeroLlave: '', numeroPiezas: 1 }];
         this.drawerEntregadaVisible = true;
     }
+
+    openEditEntregada(rec: ControlLlavesRecord) {
+        this.drawerMode = 'edit';
+        this.editingId = rec.id;
+        this.formHeader = { fecha: rec.fecha, hora: rec.hora, colaborador: rec.colaborador, departamento: rec.departamento, puesto: rec.puesto };
+        this.llavesList = [{ tipoLlave: rec.tipoLlave || 'MAGNETICA', numeroLlave: rec.numeroLlave, numeroPiezas: rec.numeroPiezas }];
+        this.drawerEntregadaVisible = true;
+    }
+
+    addLlaveItem() { this.llavesList.push({ tipoLlave: 'MAGNETICA', numeroLlave: '', numeroPiezas: 1 }); }
+
+    removeLlaveItem(i: number) { if (this.llavesList.length > 1) this.llavesList.splice(i, 1); }
+
+    isEntregadaFormValid(): boolean {
+        const h = this.formHeader;
+        return !!(h.fecha && h.hora && h.colaborador.trim() && h.departamento.trim() && h.puesto.trim())
+            && this.llavesList.length > 0
+            && this.llavesList.every(l => l.numeroLlave.trim() && l.numeroPiezas > 0);
+    }
+
+    saveEntregas() {
+        if (!this.isEntregadaFormValid()) return;
+        if (this.drawerMode === 'add') {
+            this.llavesList.forEach(item => {
+                this.controlLlavesService.create({
+                    tipo: 'ENTREGADA',
+                    tipoLlave: item.tipoLlave,
+                    fecha: this.formHeader.fecha,
+                    hora: this.formHeader.hora,
+                    colaborador: this.formHeader.colaborador,
+                    departamento: this.formHeader.departamento,
+                    puesto: this.formHeader.puesto,
+                    numeroLlave: item.numeroLlave,
+                    numeroPiezas: item.numeroPiezas
+                });
+            });
+            this.messageService.add({ severity: 'success', summary: 'Entregas registradas', detail: `${this.llavesList.length} llave(s) registrada(s).`, life: 3500 });
+        } else if (this.editingId && this.llavesList[0]) {
+            const item = this.llavesList[0];
+            this.controlLlavesService.update(this.editingId, {
+                tipoLlave: item.tipoLlave, fecha: this.formHeader.fecha, hora: this.formHeader.hora,
+                colaborador: this.formHeader.colaborador, departamento: this.formHeader.departamento,
+                puesto: this.formHeader.puesto, numeroLlave: item.numeroLlave, numeroPiezas: item.numeroPiezas
+            });
+            this.messageService.add({ severity: 'info', summary: 'Actualizado', detail: 'Registro actualizado correctamente.', life: 3500 });
+        }
+        this.drawerEntregadaVisible = false;
+    }
+
+    // ---- Drawer Devolución ----
 
     openDevueltaFromEntregada(rec: ControlLlavesRecord) {
         this.drawerMode = 'add';
         this.editingId = null;
-        const now = new Date();
-        const pad = (n: number) => n.toString().padStart(2, '0');
-        this.form = {
-            tipo: 'DEVUELTA',
-            tipoLlave: rec.tipoLlave || 'MAGNETICA',
-            entregadaId: rec.id,
-            fecha: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
-            hora: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-            colaborador: rec.colaborador,
-            departamento: rec.departamento,
-            puesto: rec.puesto,
-            numeroLlave: rec.numeroLlave,
-            numeroPiezas: rec.numeroPiezas
-        };
+        this.devueltaTarget = rec;
+        const t = this.now();
+        this.devueltaForm = { fecha: t.fecha, hora: t.hora, numeroLlave: rec.numeroLlave, numeroPiezas: rec.numeroPiezas };
+
+        // Busca todas las llaves pendientes del mismo colaborador en la misma fecha
+        const pendientes = this.filteredEntregadas.filter(e =>
+            e.colaborador.toLowerCase() === rec.colaborador.toLowerCase() &&
+            e.fecha === rec.fecha &&
+            !this.getPairedDevuelta(e.id)
+        );
+        this.pendingLlavesList = pendientes.map(e => ({ ...e, selected: e.id === rec.id }));
         this.drawerDevueltaVisible = true;
     }
 
-    openEditDrawer(rec: ControlLlavesRecord) {
+    openEditDevuelta(rec: ControlLlavesRecord) {
         this.drawerMode = 'edit';
         this.editingId = rec.id;
-        this.form = {
-            tipo: rec.tipo,
-            tipoLlave: rec.tipoLlave || 'MAGNETICA',
-            entregadaId: rec.entregadaId,
-            fecha: rec.fecha,
-            hora: rec.hora,
-            colaborador: rec.colaborador,
-            departamento: rec.departamento,
-            puesto: rec.puesto,
-            numeroLlave: rec.numeroLlave,
-            numeroPiezas: rec.numeroPiezas
-        };
-        if (rec.tipo === 'ENTREGADA') {
-            this.drawerEntregadaVisible = true;
-        } else {
-            this.drawerDevueltaVisible = true;
-        }
+        this.devueltaTarget = rec;
+        this.devueltaForm = { fecha: rec.fecha, hora: rec.hora, numeroLlave: rec.numeroLlave, numeroPiezas: rec.numeroPiezas };
+        this.pendingLlavesList = [];
+        this.drawerDevueltaVisible = true;
     }
+
+    toggleSelectAllDevueltas() {
+        const all = this.isAllDevueltasSelected();
+        this.pendingLlavesList.forEach(i => i.selected = !all);
+    }
+
+    isAllDevueltasSelected() { return this.pendingLlavesList.length > 0 && this.pendingLlavesList.every(i => i.selected); }
+
+    hasSelectedDevueltas() {
+        if (this.drawerMode === 'edit') return true;
+        return this.pendingLlavesList.some(i => i.selected);
+    }
+
+    saveDevoluciones() {
+        if (this.drawerMode === 'add') {
+            const sel = this.pendingLlavesList.filter(i => i.selected);
+            sel.forEach(item => {
+                this.controlLlavesService.create({
+                    tipo: 'DEVUELTA',
+                    tipoLlave: item.tipoLlave,
+                    entregadaId: item.id,
+                    fecha: this.devueltaForm.fecha,
+                    hora: this.devueltaForm.hora,
+                    colaborador: item.colaborador,
+                    departamento: item.departamento,
+                    puesto: item.puesto,
+                    numeroLlave: item.numeroLlave,
+                    numeroPiezas: item.numeroPiezas
+                });
+            });
+            this.messageService.add({ severity: 'success', summary: 'Devolución registrada', detail: `${sel.length} llave(s) devuelta(s).`, life: 3500 });
+        } else if (this.editingId) {
+            this.controlLlavesService.update(this.editingId, {
+                fecha: this.devueltaForm.fecha, hora: this.devueltaForm.hora,
+                numeroLlave: this.devueltaForm.numeroLlave, numeroPiezas: this.devueltaForm.numeroPiezas
+            });
+            this.messageService.add({ severity: 'info', summary: 'Actualizado', detail: 'Devolución actualizada.', life: 3500 });
+        }
+        this.drawerDevueltaVisible = false;
+    }
+
+    // ---- Utils ----
 
     getPairedDevuelta(entregadaId: string): ControlLlavesRecord | undefined {
         return this.devueltasRecords.find(r => r.entregadaId === entregadaId);
     }
 
-    getDevueltasCount(): number {
-        return this.filteredEntregadas.filter(e => !!this.getPairedDevuelta(e.id)).length;
-    }
-
-    getPendientesCount(): number {
-        return this.filteredEntregadas.filter(e => !this.getPairedDevuelta(e.id)).length;
-    }
-
-    getRetornoPercentage(): number {
-        if (this.filteredEntregadas.length === 0) return 0;
-        const devueltas = this.getDevueltasCount();
-        return Math.round((devueltas / this.filteredEntregadas.length) * 100);
-    }
-
-    isFormValid(): boolean {
-        return !!(this.form.tipoLlave && this.form.fecha && this.form.hora &&
-            this.form.colaborador.trim() && this.form.departamento.trim() &&
-            this.form.puesto.trim() && this.form.numeroLlave.trim() &&
-            this.form.numeroPiezas > 0);
-    }
-
-    saveRecord(tipo: TipoRegistro) {
-        if (!this.isFormValid()) return;
-        const payload = { ...this.form, tipo };
-        if (this.drawerMode === 'add') {
-            this.controlLlavesService.create(payload);
-            this.messageService.add({
-                severity: 'success',
-                summary: tipo === 'ENTREGADA' ? 'Llave entregada' : 'Devolución registrada',
-                detail: `Registro ${tipo === 'ENTREGADA' ? 'de entrega' : 'de devolución'} guardado correctamente.`,
-                life: 3500
-            });
-        } else if (this.editingId) {
-            this.controlLlavesService.update(this.editingId, payload);
-            this.messageService.add({
-                severity: 'info',
-                summary: 'Registro actualizado',
-                detail: 'El registro fue actualizado correctamente.',
-                life: 3500
-            });
-        }
-        this.drawerEntregadaVisible = false;
-        this.drawerDevueltaVisible = false;
+    getDevueltasCount() { return this.filteredEntregadas.filter(e => !!this.getPairedDevuelta(e.id)).length; }
+    getPendientesCount() { return this.filteredEntregadas.filter(e => !this.getPairedDevuelta(e.id)).length; }
+    getRetornoPercentage() {
+        if (!this.filteredEntregadas.length) return 0;
+        return Math.round((this.getDevueltasCount() / this.filteredEntregadas.length) * 100);
     }
 
     confirmDelete(id: string) {
         this.confirmationService.confirm({
-            message: '¿Estás seguro de eliminar este registro? Esta acción no se puede deshacer.',
+            message: '¿Eliminar este registro? No se puede deshacer.',
             header: 'Confirmar eliminación',
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'Eliminar',
@@ -800,12 +761,7 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
             acceptButtonStyleClass: 'p-button-danger',
             accept: () => {
                 this.controlLlavesService.delete(id);
-                this.messageService.add({
-                    severity: 'warn',
-                    summary: 'Eliminado',
-                    detail: 'El registro fue eliminado correctamente.',
-                    life: 3500
-                });
+                this.messageService.add({ severity: 'warn', summary: 'Eliminado', detail: 'Registro eliminado.', life: 3500 });
             }
         });
     }
