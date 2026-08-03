@@ -627,7 +627,7 @@ import { AuthService } from '@/app/core/services/auth.service';
 
 <!-- MODAL: VISUALIZAR FOTOS DEL OBJETO -->
 <div *ngIf="photoViewVisible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-200 shadow-2xl flex flex-col">
+    <div class="bg-white w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-200 shadow-2xl flex flex-col">
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
             <div class="flex items-center gap-2">
@@ -645,13 +645,37 @@ import { AuthService } from '@/app/core/services/auth.service';
         <div class="p-6 flex flex-col gap-4 overflow-y-auto">
             <p class="text-xs text-slate-500 font-semibold mb-2">
                 Descripción: <span class="text-slate-800 font-bold">{{ selectedPhotoRecord?.descripcionEncontrado }}</span>
+                <span class="block text-[11px] text-teal-600 font-medium mt-1"><i class="pi pi-search-plus mr-1"></i> Haz clic sobre cualquier imagen para verla en tamaño completo / Zoom</span>
             </p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div *ngFor="let foto of selectedPhotoRecord?.fotos" class="border border-slate-200 rounded-xl overflow-hidden shadow-sm flex items-center justify-center bg-slate-100 p-2">
-                    <img [src]="foto" class="max-h-[300px] max-w-full object-contain rounded-lg" />
+                <div *ngFor="let foto of selectedPhotoRecord?.fotos"
+                     (click)="openZoomPhoto(foto)"
+                     class="border border-slate-200 rounded-xl overflow-hidden shadow-sm flex items-center justify-center bg-slate-100 p-2 cursor-zoom-in group relative hover:border-teal-400 transition-all duration-150">
+                    <img [src]="foto" class="max-h-[300px] max-w-full object-contain rounded-lg group-hover:scale-105 transition-transform duration-200" />
+                    <div class="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-center justify-center">
+                        <span class="bg-white/90 text-slate-800 px-3 py-1.5 rounded-full text-xs font-bold shadow flex items-center gap-1">
+                            <i class="pi pi-search-plus"></i> Ampliar
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- MODAL: ZOOM DE FOTO COMPLETA -->
+<div *ngIf="zoomedPhotoUrl" (click)="closeZoomPhoto()" class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md cursor-zoom-out select-none">
+    <div class="relative max-w-[95vw] max-h-[95vh] flex flex-col items-center justify-center" (click)="$event.stopPropagation()">
+        <!-- Botón cerrar zoom -->
+        <button
+            (click)="closeZoomPhoto()"
+            class="absolute -top-12 right-0 bg-white/20 hover:bg-white/40 text-white rounded-full p-2.5 transition-all duration-150 cursor-pointer flex items-center justify-center backdrop-blur-md">
+            <i class="pi pi-times text-lg"></i>
+        </button>
+        <img [src]="zoomedPhotoUrl" class="max-w-[90vw] max-h-[85vh] object-contain rounded-xl shadow-2xl border border-white/20" />
+        <p class="text-white/80 text-xs mt-3 font-medium flex items-center gap-1">
+            <i class="pi pi-info-circle"></i> Haz clic fuera o presiona cerrar para salir
+        </p>
     </div>
 </div>
 `,
@@ -716,6 +740,7 @@ export class LostAndFoundComponent implements OnInit {
     selectedRecord: LostAndFoundRecord | null = null;
     viewRecord: LostAndFoundRecord | null = null;
     selectedPhotoRecord: LostAndFoundRecord | null = null;
+    zoomedPhotoUrl: string | null = null;
 
     // Forms objects
     formAdd = {
@@ -868,6 +893,14 @@ export class LostAndFoundComponent implements OnInit {
     viewPhotos(record: LostAndFoundRecord) {
         this.selectedPhotoRecord = record;
         this.photoViewVisible = true;
+    }
+
+    openZoomPhoto(url: string) {
+        this.zoomedPhotoUrl = url;
+    }
+
+    closeZoomPhoto() {
+        this.zoomedPhotoUrl = null;
     }
 
     async onFotosSelected(event: any) {
