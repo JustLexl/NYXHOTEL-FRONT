@@ -95,6 +95,12 @@ import { AuthService } from '@/app/core/services/auth.service';
                 <option value="RESGUARDO">En Resguardo</option>
                 <option value="ENTREGADO">Entregados</option>
             </select>
+            <input
+                type="date"
+                [(ngModel)]="filterFecha"
+                (change)="applyFilters()"
+                title="Filtrar por fecha de hallazgo"
+                class="border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white" />
         </div>
         <button
             type="button"
@@ -162,7 +168,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                                 <i class="pi pi-file-pdf text-base"></i>
                             </button>
                             <button
-                                *ngIf="!item.entregado"
+                                *ngIf="!item.entregado && canDeliver"
                                 (click)="openDeliveryDrawer(item)"
                                 title="Entregar a Huésped"
                                 class="bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer flex items-center gap-1">
@@ -698,6 +704,7 @@ export class LostAndFoundComponent implements OnInit {
     searchQuery = '';
     filterValor = 'ALL';
     filterEstado = 'ALL';
+    filterFecha = '';
 
     // Modals & Drawers Visibility
     addDrawerVisible = false;
@@ -736,6 +743,7 @@ export class LostAndFoundComponent implements OnInit {
     loggedUserPlaceholder = '';
     canDelete = true;
     canCreate = true;
+    canDeliver = true;
 
     // Canvas Signature State (delivery only)
     private canvasEl!: HTMLCanvasElement;
@@ -777,6 +785,7 @@ export class LostAndFoundComponent implements OnInit {
             userEmail === 'gerentefront@nyhotels.com') {
             this.canDelete = false;
             this.canCreate = false;
+            this.canDeliver = false;
         }
 
         this.lfService.getRecords().subscribe({
@@ -823,7 +832,10 @@ export class LostAndFoundComponent implements OnInit {
                 (this.filterEstado === 'RESGUARDO' && !r.entregado) ||
                 (this.filterEstado === 'ENTREGADO' && r.entregado);
 
-            return matchesText && matchesValor && matchesEstado;
+            // Date filter
+            const matchesFecha = !this.filterFecha || r.fechaEncontrado === this.filterFecha;
+
+            return matchesText && matchesValor && matchesEstado && matchesFecha;
         });
         this.cdr.detectChanges();
     }
@@ -832,6 +844,7 @@ export class LostAndFoundComponent implements OnInit {
         this.searchQuery = '';
         this.filterValor = 'ALL';
         this.filterEstado = 'ALL';
+        this.filterFecha = '';
         this.applyFilters();
     }
 
