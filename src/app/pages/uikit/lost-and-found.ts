@@ -176,6 +176,13 @@ import { AuthService } from '@/app/core/services/auth.service';
                                 Entregar
                             </button>
                             <button
+                                *ngIf="canEdit"
+                                (click)="editRecord(item)"
+                                title="Editar Registro"
+                                class="bg-amber-50 text-amber-600 hover:bg-amber-100 p-2 rounded-lg transition-all duration-150 border border-amber-200 cursor-pointer">
+                                <i class="pi pi-pencil text-base"></i>
+                            </button>
+                            <button
                                 *ngIf="canDelete"
                                 (click)="deleteRecord(item)"
                                 title="Eliminar Registro"
@@ -210,7 +217,7 @@ import { AuthService } from '@/app/core/services/auth.service';
             </span>
             <div>
                 <div class="font-extrabold text-slate-800 text-base leading-tight">
-                    Registrar Objeto Olvidado
+                    {{ isEditing ? 'Editar Objeto Olvidado' : 'Registrar Objeto Olvidado' }}
                 </div>
                 <div class="text-xs text-slate-500 font-medium">Lost and Found - Recepción</div>
             </div>
@@ -334,9 +341,9 @@ import { AuthService } from '@/app/core/services/auth.service';
                 class="w-1/3 py-3 border border-slate-300 hover:bg-slate-100 rounded-xl font-bold text-sm text-slate-600 uppercase transition-all duration-150 cursor-pointer">
                 Cancelar
             </button>
-            <button (click)="submitAdd()"
+            <button (click)="submitSave()"
                 class="w-2/3 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-sm uppercase shadow transition-all duration-150 cursor-pointer">
-                Guardar Registro
+                {{ isEditing ? 'Guardar Cambios' : 'Guardar Registro' }}
             </button>
         </div>
 
@@ -769,6 +776,9 @@ export class LostAndFoundComponent implements OnInit {
     canDelete = true;
     canCreate = true;
     canDeliver = true;
+    canEdit = true;
+    isEditing = false;
+    editingRecordId: string | null = null;
 
     // Canvas Signature State (delivery only)
     private canvasEl!: HTMLCanvasElement;
@@ -811,6 +821,7 @@ export class LostAndFoundComponent implements OnInit {
             this.canDelete = false;
             this.canCreate = false;
             this.canDeliver = false;
+            this.canEdit = false;
         }
 
         this.lfService.getRecords().subscribe({
@@ -875,7 +886,38 @@ export class LostAndFoundComponent implements OnInit {
 
     // Drawer management
     openAddDrawer() {
+        this.isEditing = false;
+        this.editingRecordId = null;
         this.resetAddForm();
+        this.addDrawerVisible = true;
+    }
+
+    editRecord(record: LostAndFoundRecord) {
+        let password = prompt('Ingrese el código de acceso para editar:');
+        while (password !== '7410') {
+            if (password === null) {
+                return; // Cancelado por el usuario
+            }
+            const retry = confirm('Código incorrecto. ¿Desea intentar de nuevo?');
+            if (!retry) {
+                return; // Cancelado por el usuario
+            }
+            password = prompt('Ingrese el código de acceso para editar:');
+        }
+
+        this.isEditing = true;
+        this.editingRecordId = record.id || record._id || null;
+        this.formAdd = {
+            nombreEntrega: record.nombreEntrega || '',
+            departamento: record.departamento || '',
+            seEncontroEn: record.seEncontroEn || '',
+            fechaEncontrado: record.fechaEncontrado || '',
+            horaEncontrado: record.horaEncontrado || '',
+            descripcionEncontrado: record.descripcionEncontrado || '',
+            esDeValor: !!record.esDeValor,
+            agenteSeguridad: record.agenteSeguridad || '',
+            fotos: record.fotos ? [...record.fotos] : []
+        };
         this.addDrawerVisible = true;
     }
 
@@ -1059,27 +1101,42 @@ export class LostAndFoundComponent implements OnInit {
     }
 
     // Database Actions
-    submitAdd() {
+    submitSave() {
         if (!this.formAdd.nombreEntrega || !this.formAdd.seEncontroEn || !this.formAdd.descripcionEncontrado || !this.formAdd.agenteSeguridad) {
             this.messageService.add({ severity: 'error', summary: 'Campos requeridos', detail: 'Por favor llene el nombre de quien entrega, ubicación, descripción y agente de seguridad.' });
             return;
         }
 
-        const recordToSubmit = {
-            ...this.formAdd,
-            entregado: false
-        };
+        if (this.isEditing && this.editingRecordId) {
+            this.lfService.update(this.editingRecordId, this.formAdd).subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: 'Registro actualizado correctamente.' });
+                    this.addDrawerVisible = false;
+                    this.isEditing = false;
+                    this.editingRecordId = null;
+                    this.lfService.refresh();
+                },
+                error: (err) => {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar el registro.' });
+                }
+            });
+        } else {
+            const recordToSubmit = {
+                ...this.formAdd,
+                entregado: false
+            };
 
-        this.lfService.create(recordToSubmit).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Registrado', detail: 'Objeto olvidado registrado correctamente.' });
-                this.addDrawerVisible = false;
-                this.lfService.refresh();
-            },
-            error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el registro.' });
-            }
-        });
+            this.lfService.create(recordToSubmit).subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Registrado', detail: 'Objeto olvidado registrado correctamente.' });
+                    this.addDrawerVisible = false;
+                    this.lfService.refresh();
+                },
+                error: (err) => {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el registro.' });
+                }
+            });
+        }
     }
 
     submitDelivery() {
