@@ -39,6 +39,7 @@ import { AuthService } from '@/app/core/services/auth.service';
             </p>
         </div>
         <button
+            *ngIf="canCreate"
             (click)="openAddDrawer()"
             class="bg-teal-600 text-white hover:bg-teal-700 px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:shadow-md transition-all duration-150 flex items-center gap-2 transform active:scale-95 cursor-pointer">
             <i class="pi pi-plus"></i>
@@ -169,6 +170,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                                 Entregar
                             </button>
                             <button
+                                *ngIf="canDelete"
                                 (click)="deleteRecord(item)"
                                 title="Eliminar Registro"
                                 class="bg-red-50 text-red-600 hover:bg-red-100 p-2 rounded-lg transition-all duration-150 border border-red-100 cursor-pointer">
@@ -732,6 +734,8 @@ export class LostAndFoundComponent implements OnInit {
 
     // Logged user name for placeholder
     loggedUserPlaceholder = '';
+    canDelete = true;
+    canCreate = true;
 
     // Canvas Signature State (delivery only)
     private canvasEl!: HTMLCanvasElement;
@@ -762,9 +766,18 @@ export class LostAndFoundComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        // Load logged user name as placeholder
+        // Load logged user profile
         const profile = this.authService.userProfile();
         this.loggedUserPlaceholder = profile ? (profile.name || profile.email?.split('@')?.[0] || '') : '';
+
+        const userEmail = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
+        if (userEmail === 'suprecepcion@nyxhotels.com' ||
+            userEmail === 'suprecepcion@nyhotels.com' ||
+            userEmail === 'gerentefront@nyxhotels.com' ||
+            userEmail === 'gerentefront@nyhotels.com') {
+            this.canDelete = false;
+            this.canCreate = false;
+        }
 
         this.lfService.getRecords().subscribe({
             next: (data) => {

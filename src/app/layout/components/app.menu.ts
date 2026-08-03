@@ -100,7 +100,13 @@ export class AppMenu {
                 return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
             }
             if (item.label === 'Lost and Found') {
-                return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
+                return email === 'seguridad@nyxhotels.com' ||
+                       email === 'sistemasnyxhotels@gmail.com' ||
+                       email === 'sistemas@nyxhotels.com' ||
+                       email === 'suprecepcion@nyxhotels.com' ||
+                       email === 'suprecepcion@nyhotels.com' ||
+                       email === 'gerentefront@nyxhotels.com' ||
+                       email === 'gerentefront@nyhotels.com';
             }
             if (item.label === 'Registro de Proveedores') {
                 return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
