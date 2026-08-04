@@ -817,7 +817,9 @@ export class LostAndFoundComponent implements OnInit {
         if (userEmail === 'suprecepcion@nyxhotels.com' ||
             userEmail === 'suprecepcion@nyhotels.com' ||
             userEmail === 'gerentefront@nyxhotels.com' ||
-            userEmail === 'gerentefront@nyhotels.com') {
+            userEmail === 'gerentefront@nyhotels.com' ||
+            userEmail === 'amadellaves@nyxhotels.com' ||
+            userEmail === 'guestexperience@nyxhotels.com') {
             this.canDelete = false;
             this.canCreate = false;
             this.canDeliver = false;

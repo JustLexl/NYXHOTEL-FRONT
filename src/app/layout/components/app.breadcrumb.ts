@@ -3,6 +3,7 @@ import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterModule } from '@an
 import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '@/app/core/services/auth.service';
 
 interface Breadcrumb {
     label: string;
@@ -15,7 +16,7 @@ interface Breadcrumb {
     imports: [CommonModule, RouterModule],
     template: ` <ol>
         <li>
-            <a [routerLink]="['/Inicio/ReporteGuardia']">
+            <a [routerLink]="homeRoute">
                 <i class="pi pi-home"></i>
             </a>
         </li>
@@ -34,7 +35,18 @@ export class AppBreadcrumb {
 
     readonly breadcrumbs$ = this._breadcrumbs$.asObservable();
 
-    constructor(private router: Router) {
+    get homeRoute(): string[] {
+        const profile = this.authService.userProfile();
+        const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
+
+        const restrictedEmails = ['cocinasist@nyxhotels.com', 'manttaux@nyxhotels.com', 'almacen@nyxhotels.com'];
+        if (restrictedEmails.includes(email)) {
+            return ['/Inicio/TareasDistintivoH'];
+        }
+        return ['/Inicio/ReporteGuardia'];
+    }
+
+    constructor(private router: Router, private authService: AuthService) {
         this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((event) => {
             const root = this.router.routerState.snapshot.root;
             const breadcrumbs: Breadcrumb[] = [];

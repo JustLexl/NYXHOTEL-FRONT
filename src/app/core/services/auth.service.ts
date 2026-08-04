@@ -85,7 +85,13 @@ export class AuthService {
 
             await this.delay(1000);
 
-            this.router.navigate(['/Inicio/ReporteGuardia']);
+            const userEmail = email.toLowerCase().trim();
+            const restrictedEmails = ['cocinasist@nyxhotels.com', 'manttaux@nyxhotels.com', 'almacen@nyxhotels.com'];
+            if (restrictedEmails.includes(userEmail)) {
+                this.router.navigate(['/Inicio/TareasDistintivoH']);
+            } else {
+                this.router.navigate(['/Inicio/ReporteGuardia']);
+            }
             return { success: true };
         } catch (error: any) {
             console.error('Login error:', error);

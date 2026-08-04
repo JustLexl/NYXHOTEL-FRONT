@@ -39,6 +39,7 @@ import { AuthService } from '@/app/core/services/auth.service';
             </p>
         </div>
         <button
+            *ngIf="canCreateObservacion"
             (click)="openAddDrawer()"
             class="bg-sky-600 text-white hover:bg-sky-700 px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:shadow-md transition-all duration-150 flex items-center gap-2 transform active:scale-95 cursor-pointer">
             <i class="pi pi-plus"></i>
@@ -239,12 +240,14 @@ import { AuthService } from '@/app/core/services/auth.service';
                                             <i class="pi pi-file-pdf"></i>
                                         </button>
                                         <button
+                                            *ngIf="canCreateObservacion"
                                             (click)="openEditDrawer(item)"
                                             title="Editar Observación"
                                             class="bg-slate-100 text-slate-600 hover:bg-slate-200 p-2 rounded-lg transition-all duration-150 cursor-pointer border border-slate-200">
                                             <i class="pi pi-pencil"></i>
                                         </button>
                                         <button
+                                            *ngIf="canCreateObservacion"
                                             (click)="deleteRecord(item)"
                                             title="Eliminar Observación"
                                             class="bg-red-50 text-red-600 hover:bg-red-100 p-2 rounded-lg transition-all duration-150 cursor-pointer border border-red-100">
@@ -845,6 +848,8 @@ export class TareasDistintivoHComponent implements OnInit {
     selectedRecord: DistintivoHRecord | null = null;
     formatRecord: DistintivoHRecord | null = null;
 
+    canCreateObservacion = true;
+
     // Form Observation - common header
     formObservation: {
         seccion: SeccionDistintivoH;
@@ -882,6 +887,32 @@ export class TareasDistintivoHComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        const profile = this.authService.userProfile();
+        const userEmail = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
+
+        const restrictedEmails = [
+            'almacen@nyxhotels.com',
+            'manttaux@nyxhotels.com',
+            'mantenimiento@nyxhotels.com',
+            'cocinasist@nyxhotels.com',
+            'supervisoresayb@nyxhotels.com',
+            'ayb@nyxhotels.com'
+        ];
+
+        if (restrictedEmails.includes(userEmail)) {
+            this.canCreateObservacion = false;
+        }
+
+        if (userEmail === 'almacen@nyxhotels.com') {
+            this.activeSeccion = 'ALMACEN';
+        } else if (userEmail === 'manttaux@nyxhotels.com' || userEmail === 'mantenimiento@nyxhotels.com') {
+            this.activeSeccion = 'MANTENIMIENTO';
+        } else if (userEmail === 'cocinasist@nyxhotels.com') {
+            this.activeSeccion = 'COCINA';
+        } else if (userEmail === 'supervisoresayb@nyxhotels.com' || userEmail === 'ayb@nyxhotels.com') {
+            this.activeSeccion = 'AYB';
+        }
+
         this.dhService.getRecords().subscribe({
             next: (data) => {
                 this.records = data;

@@ -87,6 +87,12 @@ export class AppMenu {
 
         // Filter out specific options if the logged-in email is not seguridad@nyxhotels.com
         const currentModel = this.model.filter(item => {
+            if (item.label === 'Reporte de Guardia' || item.label === 'Registros de Guardia') {
+                const restrictedEmails = ['cocinasist@nyxhotels.com', 'manttaux@nyxhotels.com', 'almacen@nyxhotels.com'];
+                if (restrictedEmails.includes(email)) {
+                    return false;
+                }
+            }
             if (item.label === 'Gestión de Cuentas') {
                 return email === 'sistemas@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com';
             }
@@ -106,7 +112,9 @@ export class AppMenu {
                        email === 'suprecepcion@nyxhotels.com' ||
                        email === 'suprecepcion@nyhotels.com' ||
                        email === 'gerentefront@nyxhotels.com' ||
-                       email === 'gerentefront@nyhotels.com';
+                       email === 'gerentefront@nyhotels.com' ||
+                       email === 'amadellaves@nyxhotels.com' ||
+                       email === 'guestexperience@nyxhotels.com';
             }
             if (item.label === 'Registro de Proveedores') {
                 return email === 'seguridad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
@@ -115,7 +123,15 @@ export class AppMenu {
                 return email === 'calidad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
             }
             if (item.label === 'Tareas de Distintivo H') {
-                return email === 'calidad@nyxhotels.com' || email === 'sistemasnyxhotels@gmail.com' || email === 'sistemas@nyxhotels.com';
+                return email === 'calidad@nyxhotels.com' ||
+                       email === 'sistemasnyxhotels@gmail.com' ||
+                       email === 'sistemas@nyxhotels.com' ||
+                       email === 'almacen@nyxhotels.com' ||
+                       email === 'manttaux@nyxhotels.com' ||
+                       email === 'mantenimiento@nyxhotels.com' ||
+                       email === 'cocinasist@nyxhotels.com' ||
+                       email === 'supervisoresayb@nyxhotels.com' ||
+                       email === 'ayb@nyxhotels.com';
             }
             return true;
         });

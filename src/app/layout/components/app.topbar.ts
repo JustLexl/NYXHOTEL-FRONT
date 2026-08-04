@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms';
     imports: [RouterModule, CommonModule, StyleClassModule, FormsModule, Ripple, ButtonModule, IconField],
     template: `
         <div class="layout-topbar">
-        <a class="app-logo" [routerLink]="['/Inicio/ReporteGuardia']">
+        <a class="app-logo" [routerLink]="logoRoute">
                 <img alt="app logo" [src]="logo()" />
                 <span class="app-name">Dapper</span>
             </a>
@@ -82,6 +82,17 @@ export class AppTopbar {
     menuButton = viewChild<ElementRef>('menubutton');
 
     tabs = computed(() => this.layoutService.tabs());
+
+    get logoRoute(): string[] {
+        const profile = this.authService.userProfile();
+        const email = (profile?.email || this.authService.getCurrentUser()?.email || '').toLowerCase().trim();
+
+        const restrictedEmails = ['cocinasist@nyxhotels.com', 'manttaux@nyxhotels.com', 'almacen@nyxhotels.com'];
+        if (restrictedEmails.includes(email)) {
+            return ['/Inicio/TareasDistintivoH'];
+        }
+        return ['/Inicio/ReporteGuardia'];
+    }
 
     logo = computed(() => {
         return '/layout/images/NyxHotelLogo-removebg-preview.png';
