@@ -284,14 +284,14 @@ import { AuthService } from '@/app/core/services/auth.service';
             </label>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Fecha</label>
-                    <input type="date" [(ngModel)]="formAdd.fechaEntrada"
-                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold text-slate-700" />
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Fecha (Auto)</label>
+                    <input type="date" [(ngModel)]="formAdd.fechaEntrada" readonly disabled
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 cursor-not-allowed" />
                 </div>
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Hora</label>
-                    <input type="time" [(ngModel)]="formAdd.horaEntrada"
-                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold text-slate-700" />
+                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Hora (Auto)</label>
+                    <input type="time" [(ngModel)]="formAdd.horaEntrada" readonly disabled
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 cursor-not-allowed" />
                 </div>
             </div>
         </div>
@@ -650,7 +650,9 @@ export class RegistroProveedoresComponent implements OnInit {
         });
 
         // Default date filter = today
-        this.filterFecha = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        this.filterFecha = localNow.toISOString().split('T')[0];
 
         this.resetForm();
     }
@@ -686,11 +688,13 @@ export class RegistroProveedoresComponent implements OnInit {
     }
 
     resetFilters() {
+        const now = new Date();
+        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
         this.filterNombre = '';
         this.filterCompania = '';
         this.filterAgente = '';
         this.filterEstado = 'ALL';
-        this.filterFecha = new Date().toISOString().split('T')[0]; // Reset to today
+        this.filterFecha = localNow.toISOString().split('T')[0]; // Reset to today
         this.applyFilters();
     }
 
@@ -702,8 +706,9 @@ export class RegistroProveedoresComponent implements OnInit {
 
     resetForm() {
         const now = new Date();
-        const localDate = now.toISOString().split('T')[0];
-        const localTime = now.toTimeString().split(' ')[0].substring(0, 5);
+        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        const localDate = localNow.toISOString().split('T')[0];
+        const localTime = localNow.toISOString().split('T')[1].substring(0, 5);
 
         this.formAdd = {
             fechaEntrada: localDate,

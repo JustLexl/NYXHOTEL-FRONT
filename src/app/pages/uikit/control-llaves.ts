@@ -607,7 +607,8 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
     ngOnDestroy() { this.sub?.unsubscribe(); }
 
     private now() {
-        const d = new Date();
+        const now = new Date();
+        const d = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
         const p = (n: number) => n.toString().padStart(2, '0');
         return {
             fecha: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,

@@ -129,7 +129,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
                     <tr *ngFor="let item of filteredRecords" class="hover:bg-slate-50 transition-colors duration-150">
-                        <td class="py-4 px-6 font-bold text-teal-700 font-mono">{{ item.folio || '—' }}</td>
+                        <td class="py-4 px-6 font-bold text-teal-700 font-mono">{{ getFolio(item) }}</td>
                         <td class="py-4 px-6 font-semibold">{{ item.fechaEncontrado }} {{ item.horaEncontrado }}</td>
                         <td class="py-4 px-6">
                             <span class="font-bold text-slate-900 block">{{ item.descripcionEncontrado }}</span>
@@ -250,21 +250,28 @@ import { AuthService } from '@/app/core/services/auth.service';
 
         <div class="border-t border-slate-200"></div>
 
-        <!-- Fecha y Hora -->
-        <div class="grid grid-cols-2 gap-3">
+        <!-- Folio, Fecha y Hora (Automáticas por sistema) -->
+        <div class="grid grid-cols-3 gap-2">
             <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Fecha Encontrado
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Folio (Auto)
                 </label>
-                <input type="date" [(ngModel)]="formAdd.fechaEncontrado"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent font-semibold text-slate-700" />
+                <input type="text" [value]="isEditing ? (formAdd.folio || previewFolio()) : previewFolio()" readonly disabled
+                    class="w-full border border-slate-300 rounded-lg px-2 py-2.5 text-xs font-bold text-teal-700 bg-slate-100 font-mono cursor-not-allowed text-center" />
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Hora Encontrado
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Fecha (Auto)
                 </label>
-                <input type="time" [(ngModel)]="formAdd.horaEncontrado"
-                    class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent font-semibold text-slate-700" />
+                <input type="date" [(ngModel)]="formAdd.fechaEncontrado" readonly disabled
+                    class="w-full border border-slate-300 rounded-lg px-2 py-2.5 text-xs font-semibold text-slate-700 bg-slate-100 cursor-not-allowed" />
+            </div>
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Hora (Auto)
+                </label>
+                <input type="time" [(ngModel)]="formAdd.horaEncontrado" readonly disabled
+                    class="w-full border border-slate-300 rounded-lg px-2 py-2.5 text-xs font-semibold text-slate-700 bg-slate-100 cursor-not-allowed" />
             </div>
         </div>
 
@@ -515,7 +522,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                             </div>
                             <div class="col-span-1">
                                 <span class="font-bold text-slate-500 uppercase block text-[9px]">Folio:</span>
-                                <span class="font-extrabold text-slate-900 font-mono">{{ viewRecord?.folio || '—' }}</span>
+                                <span class="font-extrabold text-slate-900 font-mono">{{ getFolio(viewRecord) }}</span>
                             </div>
                         </div>
                     </div>
@@ -592,7 +599,7 @@ import { AuthService } from '@/app/core/services/auth.service';
                             </div>
                             <div>
                                 <span class="font-bold text-slate-500 uppercase block text-[9px]">Folio:</span>
-                                <span class="font-extrabold text-slate-900 font-mono">{{ viewRecord?.folio || '—' }}</span>
+                                <span class="font-extrabold text-slate-900 font-mono">{{ getFolio(viewRecord) }}</span>
                             </div>
                         </div>
                     </div>
@@ -759,7 +766,8 @@ export class LostAndFoundComponent implements OnInit {
         descripcionEncontrado: '',
         esDeValor: false,
         agenteSeguridad: '',
-        fotos: [] as string[]
+        fotos: [] as string[],
+        folio: ''
     };
 
     formDelivery = {
@@ -854,7 +862,7 @@ export class LostAndFoundComponent implements OnInit {
         this.filteredRecords = this.records.filter(r => {
             // Search text filter
             const matchesText = !query || 
-                (r.folio && r.folio.toLowerCase().includes(query)) ||
+                this.getFolio(r).toLowerCase().includes(query) ||
                 r.descripcionEncontrado.toLowerCase().includes(query) ||
                 r.seEncontroEn.toLowerCase().includes(query) ||
                 r.nombreEntrega.toLowerCase().includes(query) ||
@@ -918,7 +926,8 @@ export class LostAndFoundComponent implements OnInit {
             descripcionEncontrado: record.descripcionEncontrado || '',
             esDeValor: !!record.esDeValor,
             agenteSeguridad: record.agenteSeguridad || '',
-            fotos: record.fotos ? [...record.fotos] : []
+            fotos: record.fotos ? [...record.fotos] : [],
+            folio: record.folio || this.getFolio(record)
         };
         this.addDrawerVisible = true;
     }
@@ -1016,8 +1025,9 @@ export class LostAndFoundComponent implements OnInit {
     // Form resets
     resetAddForm() {
         const now = new Date();
-        const localDate = now.toISOString().split('T')[0];
-        const localTime = now.toTimeString().split(' ')[0].substring(0, 5);
+        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        const localDate = localNow.toISOString().split('T')[0];
+        const localTime = localNow.toISOString().split('T')[1].substring(0, 5);
 
         this.formAdd = {
             nombreEntrega: '',
@@ -1028,14 +1038,16 @@ export class LostAndFoundComponent implements OnInit {
             descripcionEncontrado: '',
             esDeValor: false,
             agenteSeguridad: '',  // vacío — el usuario verá el placeholder con su nombre
-            fotos: []
+            fotos: [],
+            folio: ''
         };
     }
 
     resetDeliveryForm() {
         const now = new Date();
-        const localDate = now.toISOString().split('T')[0];
-        const localTime = now.toTimeString().split(' ')[0].substring(0, 5);
+        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        const localDate = localNow.toISOString().split('T')[0];
+        const localTime = localNow.toISOString().split('T')[1].substring(0, 5);
 
         this.formDelivery = {
             nombreReclama: '',
@@ -1123,8 +1135,10 @@ export class LostAndFoundComponent implements OnInit {
                 }
             });
         } else {
+            const generatedFolio = this.generateFolio(this.formAdd.fechaEncontrado);
             const recordToSubmit = {
                 ...this.formAdd,
+                folio: generatedFolio,
                 entregado: false
             };
 
@@ -1139,6 +1153,39 @@ export class LostAndFoundComponent implements OnInit {
                 }
             });
         }
+    }
+
+    generateFolio(fecha: string): string {
+        if (!fecha || !fecha.includes('-')) return '';
+        const parts = fecha.split('-'); // [YYYY, MM, DD]
+        if (parts.length < 3) return '';
+        const dd = parts[2].padStart(2, '0');
+        const mm = parts[1].padStart(2, '0');
+
+        const count = this.records.filter(r => r.fechaEncontrado === fecha).length;
+        const consecutivo = String(count + 1).padStart(2, '0');
+        return `${dd}${mm}${consecutivo}`;
+    }
+
+    getFolio(record: LostAndFoundRecord | null | undefined | any): string {
+        if (!record) return '—';
+        if (record.folio) return record.folio;
+        if (!record.fechaEncontrado) return '—';
+
+        const sameDayRecords = this.records.filter(r => r.fechaEncontrado === record.fechaEncontrado);
+        const index = sameDayRecords.findIndex(r => (r.id && r.id === record.id) || (r._id && r._id === record._id) || r === record);
+        const count = index >= 0 ? index + 1 : 1;
+
+        const parts = record.fechaEncontrado.split('-');
+        if (parts.length < 3) return '—';
+        const dd = parts[2].padStart(2, '0');
+        const mm = parts[1].padStart(2, '0');
+        const consecutivo = String(count).padStart(2, '0');
+        return `${dd}${mm}${consecutivo}`;
+    }
+
+    previewFolio(): string {
+        return this.generateFolio(this.formAdd.fechaEncontrado);
     }
 
     submitDelivery() {
