@@ -1162,8 +1162,20 @@ export class LostAndFoundComponent implements OnInit {
         const dd = parts[2].padStart(2, '0');
         const mm = parts[1].padStart(2, '0');
 
-        const count = this.records.filter(r => r.fechaEncontrado === fecha).length;
-        const consecutivo = String(count + 1).padStart(2, '0');
+        // Parse max existing consecutivo number for this date to avoid duplicate folios
+        const dayRecords = this.records.filter(r => r.fechaEncontrado === fecha);
+        let maxNum = 0;
+        dayRecords.forEach(r => {
+            const f = r.folio || '';
+            if (f.length >= 6) {
+                const numPart = parseInt(f.substring(4), 10);
+                if (!isNaN(numPart) && numPart > maxNum) {
+                    maxNum = numPart;
+                }
+            }
+        });
+
+        const consecutivo = String(maxNum + 1).padStart(2, '0');
         return `${dd}${mm}${consecutivo}`;
     }
 
@@ -1174,7 +1186,12 @@ export class LostAndFoundComponent implements OnInit {
 
         const sameDayRecords = this.records.filter(r => r.fechaEncontrado === record.fechaEncontrado);
         const index = sameDayRecords.findIndex(r => (r.id && r.id === record.id) || (r._id && r._id === record._id) || r === record);
-        const count = index >= 0 ? index + 1 : 1;
+
+        // Find how many records on the same day were created on or before this record
+        let count = 1;
+        if (index >= 0) {
+            count = index + 1;
+        }
 
         const parts = record.fechaEncontrado.split('-');
         if (parts.length < 3) return '—';
