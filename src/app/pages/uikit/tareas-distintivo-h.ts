@@ -8,6 +8,7 @@ import { DrawerModule } from 'primeng/drawer';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DistintivoHRecord, DistintivoHService, HallazgoItem, SeccionDistintivoH } from '../service/distintivo-h.service';
 import { AuthService } from '@/app/core/services/auth.service';
+import { getCancunNow } from '@/app/core/utils/date-utils';
 
 @Component({
     selector: 'app-tareas-distintivo-h',
@@ -363,29 +364,59 @@ import { AuthService } from '@/app/core/services/auth.service';
                             <!-- Evidencia de mejora (Foto) -->
                             <div>
                                 <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Evidencia de Mejora</label>
-                                <input type="file" accept="image/*" (change)="onEvidenciaSelected($event, h)" class="hidden" #fileInputEvidence />
-                                <button *ngIf="!h.evidencia" type="button" (click)="fileInputEvidence.click()"
-                                    class="w-full border-2 border-dashed border-slate-300 hover:border-sky-400 hover:bg-sky-50 rounded-xl py-5 text-slate-400 hover:text-sky-600 text-xs font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer">
+                                <input type="file" accept="image/*" (change)="onEvidenciaSelected($event, h, idx)" class="hidden" #fileInputEvidence />
+                                
+                                <!-- Estado: Procesando / Comprimiendo imagen -->
+                                <div *ngIf="compressingEvidencia[idx]"
+                                    class="w-full border-2 border-sky-200 bg-sky-50/70 rounded-xl py-4 px-3 flex items-center justify-center gap-2 text-sky-700 text-xs font-bold shadow-xs">
+                                    <i class="pi pi-spin pi-spinner text-lg text-sky-600"></i>
+                                    <span>Optimizando y procesando imagen...</span>
+                                </div>
+
+                                <!-- Sin evidencia cargada -->
+                                <button *ngIf="!h.evidencia && !compressingEvidencia[idx]" type="button" (click)="fileInputEvidence.click()"
+                                    class="w-full border-2 border-dashed border-slate-300 hover:border-sky-400 hover:bg-sky-50 rounded-xl py-4 text-slate-400 hover:text-sky-600 text-xs font-bold transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer">
                                     <i class="pi pi-camera text-2xl"></i>
                                     <span>Subir foto de evidencia</span>
-                                    <span class="text-[10px] font-normal text-slate-300">JPG, PNG, WEBP</span>
+                                    <span class="text-[10px] font-normal text-slate-300">JPG, PNG, WEBP (Se optimizará automáticamente)</span>
                                 </button>
-                                <div *ngIf="h.evidencia" class="relative rounded-xl overflow-hidden border border-slate-200 shadow group">
-                                    <img [src]="h.evidencia" class="w-full max-h-44 object-cover" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span class="text-white text-[11px] font-bold flex items-center gap-1">
-                                            <i class="pi pi-check-circle text-emerald-400"></i> Evidencia cargada
-                                        </span>
-                                        <button type="button" (click)="h.evidencia = ''"
-                                            class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer">
-                                            <i class="pi pi-trash"></i> Eliminar
-                                        </button>
+
+                                <!-- Evidencia cargada: Previsualización en pequeño -->
+                                <div *ngIf="h.evidencia && !compressingEvidencia[idx]"
+                                    class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shadow-xs">
+                                    <!-- Thumbnail pequeño clickeable para abrir en grande -->
+                                    <div class="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-300 group cursor-pointer shrink-0 shadow-sm"
+                                         (click)="openImageLightbox(h.evidencia)"
+                                         title="Haz clic para ver en tamaño grande">
+                                        <img [src]="h.evidencia" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" />
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <i class="pi pi-search-plus text-white text-lg drop-shadow"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Detalles y Acciones -->
+                                    <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+                                        <div class="flex items-center gap-1 text-xs text-emerald-700 font-extrabold">
+                                            <i class="pi pi-check-circle text-emerald-500"></i>
+                                            <span>Evidencia cargada</span>
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 font-medium">Haz clic en la imagen para previsualizar en grande.</p>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            <button type="button" (click)="openImageLightbox(h.evidencia)"
+                                                class="bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer">
+                                                <i class="pi pi-eye text-[10px]"></i> Ver grande
+                                            </button>
+                                            <button type="button" (click)="fileInputEvidence.click()"
+                                                class="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer">
+                                                <i class="pi pi-refresh text-[10px]"></i> Cambiar
+                                            </button>
+                                            <button type="button" (click)="h.evidencia = ''"
+                                                class="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer">
+                                                <i class="pi pi-trash text-[10px]"></i> Eliminar
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <button *ngIf="h.evidencia" type="button" (click)="fileInputEvidence.click()"
-                                    class="mt-2 text-[10px] text-sky-600 hover:text-sky-800 font-bold cursor-pointer flex items-center gap-1">
-                                    <i class="pi pi-refresh"></i> Cambiar foto
-                                </button>
                             </div>
 
                             <!-- Plan de acción -->
@@ -402,14 +433,14 @@ import { AuthService } from '@/app/core/services/auth.service';
 
                 <!-- Footer: Guardar -->
                 <div class="bg-white border-t border-slate-200 p-4 flex gap-3">
-                    <button (click)="closeEvidencePanel()"
-                        class="px-5 py-2.5 border-2 border-slate-200 hover:bg-slate-100 rounded-xl font-bold text-xs text-slate-600 cursor-pointer transition-all">
+                    <button (click)="closeEvidencePanel()" [disabled]="savingEvidencia"
+                        class="px-5 py-2.5 border-2 border-slate-200 hover:bg-slate-100 disabled:opacity-50 rounded-xl font-bold text-xs text-slate-600 cursor-pointer transition-all">
                         Cancelar
                     </button>
-                    <button (click)="saveEvidenceChanges()"
-                        class="flex-1 py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-xl font-black text-xs shadow-lg shadow-sky-200 cursor-pointer flex items-center justify-center gap-2 transition-all duration-150 active:scale-95">
-                        <i class="pi pi-save"></i>
-                        Guardar Evidencias y Cambios
+                    <button (click)="saveEvidenceChanges()" [disabled]="savingEvidencia"
+                        class="flex-1 py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-black text-xs shadow-lg shadow-sky-200 cursor-pointer flex items-center justify-center gap-2 transition-all duration-150 active:scale-95">
+                        <i class="pi" [class.pi-save]="!savingEvidencia" [class.pi-spin]="savingEvidencia" [class.pi-spinner]="savingEvidencia"></i>
+                        <span>{{ savingEvidencia ? 'Guardando Evidencias...' : 'Guardar Evidencias y Cambios' }}</span>
                     </button>
                 </div>
 
@@ -748,7 +779,10 @@ import { AuthService } from '@/app/core/services/auth.service';
                             </td>
                             <!-- Evidencia de mejora -->
                             <td class="border-r border-slate-900 p-2 text-center">
-                                <img *ngIf="item.evidencia" [src]="item.evidencia" class="max-h-24 max-w-full object-contain mx-auto rounded border border-slate-300" />
+                                <img *ngIf="item.evidencia" [src]="item.evidencia"
+                                    (click)="openImageLightbox(item.evidencia)"
+                                    class="max-h-24 max-w-full object-contain mx-auto rounded border border-slate-300 cursor-pointer hover:opacity-85 transition-opacity"
+                                    title="Haz clic para ver en pantalla completa" />
                                 <span *ngIf="!item.evidencia" class="text-slate-400 italic text-[10px]">Sin evidencia</span>
                             </td>
                             <!-- Realizado SI O NO -->
@@ -798,6 +832,27 @@ import { AuthService } from '@/app/core/services/auth.service';
         </div>
     </div>
 </div>
+
+<!-- MODAL LIGHTBOX: PREVISUALIZAR IMAGEN EN PANTALLA COMPLETA -->
+<div *ngIf="previewImageModalUrl" class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all animate-fadeIn cursor-pointer" (click)="previewImageModalUrl = null">
+    <div class="relative max-w-4xl max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col cursor-default" (click)="$event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="px-5 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center text-white">
+            <span class="text-xs font-extrabold flex items-center gap-2">
+                <i class="pi pi-image text-sky-400 text-base"></i>
+                Vista Previa de Evidencia
+            </span>
+            <button (click)="previewImageModalUrl = null" class="text-slate-400 hover:text-white hover:bg-slate-700 p-1.5 rounded-lg transition-all cursor-pointer">
+                <i class="pi pi-times text-base"></i>
+            </button>
+        </div>
+        <!-- Body Image -->
+        <div class="p-3 flex items-center justify-center overflow-auto bg-black/70">
+            <img [src]="previewImageModalUrl" class="max-h-[80vh] max-w-full object-contain rounded-xl shadow-2xl" />
+        </div>
+    </div>
+</div>
+
 `,
     styles: [`
         :host { display: block; }
@@ -850,6 +905,11 @@ export class TareasDistintivoHComponent implements OnInit {
 
     canCreateObservacion = true;
 
+    // Loading & Modal state for Evidences
+    savingEvidencia = false;
+    compressingEvidencia: { [key: number]: boolean } = {};
+    previewImageModalUrl: string | null = null;
+
     // Form Observation - common header
     formObservation: {
         seccion: SeccionDistintivoH;
@@ -861,7 +921,7 @@ export class TareasDistintivoHComponent implements OnInit {
         hallazgos: HallazgoItem[]; // used only in edit mode
     } = {
         seccion: 'AYB',
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: getCancunNow().fecha,
         mesAuditoria: '',
         responsableDepto: 'Ignacio Saucedo',
         auditor: 'Onelia Villasis',
@@ -992,7 +1052,7 @@ export class TareasDistintivoHComponent implements OnInit {
 
         this.formObservation = {
             seccion: this.activeSeccion,
-            fecha: today.toISOString().split('T')[0],
+            fecha: getCancunNow().fecha,
             mesAuditoria: monthName,
             responsableDepto: this.getDefaultResponsable(this.activeSeccion),
             auditor: 'Onelia Villasis',
@@ -1259,31 +1319,95 @@ export class TareasDistintivoHComponent implements OnInit {
         this.selectedRecord = null;
     }
 
-    onEvidenciaSelected(event: Event, item: HallazgoItem) {
+    // ── Image Optimization & Compression ────────────────────
+    compressImage(file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.70): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+                const img = new Image();
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth || height > maxHeight) {
+                        if (width > height) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        } else {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(dataUrl);
+                    } else {
+                        resolve(e.target.result as string);
+                    }
+                };
+                img.onerror = () => resolve(e.target.result as string);
+                img.src = e.target.result as string;
+            };
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    openImageLightbox(url: string | undefined | null) {
+        if (url) {
+            this.previewImageModalUrl = url;
+        }
+    }
+
+    async onEvidenciaSelected(event: Event, item: HallazgoItem, index: number) {
         const input = event.target as HTMLInputElement;
         if (input.files && input.files[0]) {
             const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e: any) => {
-                item.evidencia = e.target.result;
-            };
-            reader.readAsDataURL(file);
+            this.compressingEvidencia[index] = true;
+            this.cdr.detectChanges();
+            try {
+                const compressedBase64 = await this.compressImage(file, 1200, 1200, 0.70);
+                item.evidencia = compressedBase64;
+            } catch (error) {
+                console.error('Error comprimiendo evidencia:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error de imagen',
+                    detail: 'No se pudo procesar la imagen seleccionada.'
+                });
+            } finally {
+                this.compressingEvidencia[index] = false;
+                input.value = '';
+                this.cdr.detectChanges();
+            }
         }
     }
 
     saveEvidenceChanges() {
-        if (!this.selectedRecord || !this.selectedRecord.id) return;
+        if (!this.selectedRecord) return;
+        const id = this.selectedRecord.id || this.selectedRecord._id;
+        if (!id) return;
 
-        this.dhService.update(this.selectedRecord.id, {
+        this.savingEvidencia = true;
+        this.dhService.update(id, {
             hallazgos: this.selectedRecord.hallazgos
         }).subscribe({
             next: () => {
+                this.savingEvidencia = false;
                 this.messageService.add({ severity: 'success', summary: 'Evidencias Guardadas', detail: 'Se actualizaron las evidencias y el seguimiento.' });
                 this.closeEvidencePanel();
                 this.dhService.refresh();
             },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron guardar las evidencias.' });
+            error: (err) => {
+                this.savingEvidencia = false;
+                console.error('Error al guardar evidencias:', err);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron guardar las evidencias. Intenta de nuevo.' });
             }
         });
     }
