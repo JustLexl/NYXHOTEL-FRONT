@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -593,7 +593,8 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
     constructor(
         private controlLlavesService: ControlLlavesService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private cdr: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
@@ -602,6 +603,7 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
             this.entregadasRecords = records.filter(r => r.tipo === 'ENTREGADA');
             this.devueltasRecords = records.filter(r => r.tipo === 'DEVUELTA');
             this.applyFilter();
+            this.cdr.detectChanges();
         });
     }
 
@@ -774,6 +776,7 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
         const matchTipo = (r: ControlLlavesRecord) => t === 'TODAS' || r.tipoLlave === t;
         this.filteredEntregadas = this.entregadasRecords.filter(r => matchMes(r) && matchTipo(r));
         this.filteredDevueltas = this.devueltasRecords.filter(r => matchMes(r) && matchTipo(r));
+        this.cdr.detectChanges();
     }
 
     formatFecha(fecha: string): string {

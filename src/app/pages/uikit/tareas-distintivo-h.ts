@@ -977,6 +977,7 @@ export class TareasDistintivoHComponent implements OnInit {
             next: (data) => {
                 this.records = data;
                 this.applyFilters();
+                this.cdr.detectChanges();
             }
         });
         this.resetForm();
@@ -1088,6 +1089,7 @@ export class TareasDistintivoHComponent implements OnInit {
         const query = this.searchQuery.toLowerCase().trim();
         if (!query) {
             this.filteredRecords = [...seccionRecords];
+            this.cdr.detectChanges();
             return;
         }
 
@@ -1103,6 +1105,7 @@ export class TareasDistintivoHComponent implements OnInit {
             );
             return matchesFecha || matchesMes || matchesAuditor || matchesResp || matchesHallazgo;
         });
+        this.cdr.detectChanges();
     }
 
     // Dynamic row addition for hallazgos

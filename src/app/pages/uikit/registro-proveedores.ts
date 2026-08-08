@@ -647,6 +647,7 @@ export class RegistroProveedoresComponent implements OnInit {
             next: (data) => {
                 this.records = data;
                 this.applyFilters();
+                this.cdr.detectChanges();
             }
         });
 

@@ -839,6 +839,7 @@ export class LostAndFoundComponent implements OnInit {
             next: (data) => {
                 this.records = data;
                 this.applyFilters();
+                this.cdr.detectChanges();
             }
         });
         this.resetAddForm();

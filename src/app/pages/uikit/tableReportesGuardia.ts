@@ -628,8 +628,16 @@ export class TableReportesGuardia implements OnInit {
         }
     }
 
-    verReporte(reporte: ReporteGuardia) {
-        this.selectedReporte = reporte;
+    async verReporte(reporte: ReporteGuardia) {
+        let r = reporte;
+        if (r._id && (!r.evidencias || !r.areasHuespedes)) {
+            try {
+                r = await firstValueFrom(this.reporteService.getReporte(r._id));
+            } catch (err) {
+                console.error('Error cargando detalle del reporte:', err);
+            }
+        }
+        this.selectedReporte = r;
         this.vistaDetalle = true;
         setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
         this.cdr.detectChanges();
