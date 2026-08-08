@@ -8,6 +8,7 @@ import { DrawerModule } from 'primeng/drawer';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LostAndFoundRecord, LostAndFoundService } from '../service/lost-and-found.service';
 import { AuthService } from '@/app/core/services/auth.service';
+import { getCancunNow } from '@/app/core/utils/date-utils';
 
 @Component({
     selector: 'app-lost-and-found',
@@ -1024,17 +1025,14 @@ export class LostAndFoundComponent implements OnInit {
 
     // Form resets
     resetAddForm() {
-        const now = new Date();
-        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-        const localDate = localNow.toISOString().split('T')[0];
-        const localTime = localNow.toISOString().split('T')[1].substring(0, 5);
+        const nowCancun = getCancunNow();
 
         this.formAdd = {
             nombreEntrega: '',
             departamento: '',
             seEncontroEn: '',
-            fechaEncontrado: localDate,
-            horaEncontrado: localTime,
+            fechaEncontrado: nowCancun.fecha,
+            horaEncontrado: nowCancun.hora,
             descripcionEncontrado: '',
             esDeValor: false,
             agenteSeguridad: '',  // vacío — el usuario verá el placeholder con su nombre
@@ -1044,16 +1042,13 @@ export class LostAndFoundComponent implements OnInit {
     }
 
     resetDeliveryForm() {
-        const now = new Date();
-        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-        const localDate = localNow.toISOString().split('T')[0];
-        const localTime = localNow.toISOString().split('T')[1].substring(0, 5);
+        const nowCancun = getCancunNow();
 
         this.formDelivery = {
             nombreReclama: '',
             habitacionReclama: '',
-            fechaReclama: localDate,
-            horaReclama: localTime,
+            fechaReclama: nowCancun.fecha,
+            horaReclama: nowCancun.hora,
             descripcionReclama: 'SE HACE ENTREGA DEL OBJETO REGISTRADO EN EXCELENTES CONDICIONES A SU PROPIETARIO.',
             firmaReclama: ''
         };

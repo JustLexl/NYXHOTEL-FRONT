@@ -8,6 +8,7 @@ import { DrawerModule } from 'primeng/drawer';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { RegistroProveedorRecord, RegistroProveedoresService } from '../service/registro-proveedores.service';
 import { AuthService } from '@/app/core/services/auth.service';
+import { getCancunNow } from '@/app/core/utils/date-utils';
 
 @Component({
     selector: 'app-registro-proveedores',
@@ -649,10 +650,8 @@ export class RegistroProveedoresComponent implements OnInit {
             }
         });
 
-        // Default date filter = today
-        const now = new Date();
-        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-        this.filterFecha = localNow.toISOString().split('T')[0];
+        // Default date filter = today (GMT-5 Cancún)
+        this.filterFecha = getCancunNow().fecha;
 
         this.resetForm();
     }
@@ -688,13 +687,11 @@ export class RegistroProveedoresComponent implements OnInit {
     }
 
     resetFilters() {
-        const now = new Date();
-        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
         this.filterNombre = '';
         this.filterCompania = '';
         this.filterAgente = '';
         this.filterEstado = 'ALL';
-        this.filterFecha = localNow.toISOString().split('T')[0]; // Reset to today
+        this.filterFecha = getCancunNow().fecha; // Reset to today (GMT-5 Cancún)
         this.applyFilters();
     }
 
@@ -705,14 +702,11 @@ export class RegistroProveedoresComponent implements OnInit {
     }
 
     resetForm() {
-        const now = new Date();
-        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-        const localDate = localNow.toISOString().split('T')[0];
-        const localTime = localNow.toISOString().split('T')[1].substring(0, 5);
+        const nowCancun = getCancunNow();
 
         this.formAdd = {
-            fechaEntrada: localDate,
-            horaEntrada: localTime,
+            fechaEntrada: nowCancun.fecha,
+            horaEntrada: nowCancun.hora,
             nombreProveedor: '',
             compania: '',
             numeroGafete: '',
@@ -818,9 +812,9 @@ export class RegistroProveedoresComponent implements OnInit {
 
     // ── Salida ─────────────────────────────────────
     confirmarSalida(record: RegistroProveedorRecord) {
-        const now = new Date();
-        this.currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
-        this.currentDate = now.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const nowCancun = getCancunNow();
+        this.currentTime = nowCancun.hora;
+        this.currentDate = nowCancun.fechaLarga;
         this.selectedRecord = record;
         this.salidaModalVisible = true;
     }

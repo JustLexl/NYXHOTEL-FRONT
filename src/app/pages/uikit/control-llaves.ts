@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DrawerModule } from 'primeng/drawer';
 import { ControlLlavesRecord, ControlLlavesService } from '../service/control-llaves.service';
+import { getCancunNow } from '@/app/core/utils/date-utils';
 
 const DEPARTMENTS = [
     'ALIMENTOS Y BEBIDAS',
@@ -607,13 +608,8 @@ export class ControlLlavesComponent implements OnInit, OnDestroy {
     ngOnDestroy() { this.sub?.unsubscribe(); }
 
     private now() {
-        const now = new Date();
-        const d = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-        const p = (n: number) => n.toString().padStart(2, '0');
-        return {
-            fecha: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,
-            hora: `${p(d.getHours())}:${p(d.getMinutes())}`
-        };
+        const { fecha, hora } = getCancunNow();
+        return { fecha, hora };
     }
 
     // ---- Drawer Entrega ----

@@ -2,6 +2,7 @@ import { Component, ChangeDetectorRef, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@/app/core/services/auth.service';
+import { getCancunNow } from '@/app/core/utils/date-utils';
 import { ReporteGuardiaService, ReporteGuardia as ReporteGuardiaModel, ItemReporte, RestauranteReporte } from '../service/reporte-guardia.service';
 
 type Vista = 'inicio' | 'formulario' | 'enviado';
@@ -830,8 +831,8 @@ export class ReporteGuardia {
     enviando = false;
     errorEnvio = '';
 
-    fechaHoy = new Date();
-    fechaFormateada = this.fechaHoy.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    fechaHoy = getCancunNow().cancunDate;
+    fechaFormateada = getCancunNow().fechaLarga;
     nombreEjecutivo = '';
 
     reporte!: ReporteGuardiaModel;
